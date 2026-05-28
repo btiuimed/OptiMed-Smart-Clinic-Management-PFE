@@ -1,0 +1,11 @@
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# IDEs and editors
+.idea/
+.vscode/
+
+# Server logs or local configs containing database passwords
+config/config.local.php
+*.log
