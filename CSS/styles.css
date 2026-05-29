@@ -1251,3 +1251,26 @@ footer { background: var(--text); color: rgba(255,255,255,.8); padding: 60px 5% 
   animation: none !important;
   opacity: 0.15; /* Réduit l'impact visuel pour maximiser la lisibilité du texte */
 }
+
+/* Default: hide doctor content until role is confirmed */
+body:not(.role-patient):not(.role-doctor) .doctor-only {
+  display: none !important;
+}
+
+/* Ensure the first active tab in each role is always visible */
+body.role-doctor #tab-doc-overview.dash-tab.active,
+body.role-patient #tab-overview.dash-tab.active {
+  display: block !important;
+}
+
+/* Doctor weekly calendar — responsive */
+@media (max-width: 900px) {
+  #docScheduleContainer [style*="grid-template-columns:repeat(7"] {
+    grid-template-columns: repeat(4, 1fr) !important;
+  }
+}
+@media (max-width: 560px) {
+  #docScheduleContainer [style*="grid-template-columns:repeat(7"] {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
