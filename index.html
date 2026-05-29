@@ -108,7 +108,7 @@
   </div>
 </div><!-- /addDoctorModal -->
 
-<body>
+<body class="role-patient">
 
 <!-- ═══════════════════════════════════════════════════
      BARRE DE NAVIGATION
@@ -648,36 +648,63 @@
         <div class="sidebar-brand-icon"><i class="fas fa-hospital-symbol"></i></div>
         <div>
           <div class="sidebar-brand-name">OptiMed</div>
-          <div class="sidebar-brand-sub">Espace Patient</div>
+          <div class="sidebar-brand-sub patient-only">Espace Patient</div>
+          <div class="sidebar-brand-sub doctor-only"
+               style="color:#7ee8de;font-weight:700;">Espace Praticien</div>
         </div>
       </div>
 
       <div class="sidebar-nav">
-        <div class="sidebar-section-lbl">Portail Patient</div>
-        <div class="sidebar-item active" id="sdb-overview"
+
+        <!-- Patient nav -->
+        <div class="sidebar-section-lbl patient-only">Portail Patient</div>
+        <div class="sidebar-item active patient-only" id="sdb-overview"
              onclick="switchDashTab('overview')">
           <i class="fas fa-th-large"></i> Vue d'ensemble
         </div>
-        <div class="sidebar-item" id="sdb-appointments"
+        <div class="sidebar-item patient-only" id="sdb-appointments"
              onclick="switchDashTab('appointments')">
           <i class="fas fa-calendar-alt"></i> Rendez-vous
         </div>
-        <div class="sidebar-item" id="sdb-history"
+        <div class="sidebar-item patient-only" id="sdb-history"
              onclick="switchDashTab('history')">
           <i class="fas fa-history"></i> Historique
         </div>
-        <div class="sidebar-item" id="sdb-profile"
+        <div class="sidebar-item patient-only" id="sdb-profile"
              onclick="switchDashTab('profile')">
           <i class="fas fa-user-circle"></i> Mon profil
         </div>
-        <div class="sidebar-divider"></div>
-        <div class="sidebar-item" onclick="goPage('booking')">
+        <div class="sidebar-divider patient-only"></div>
+        <div class="sidebar-item patient-only" onclick="goPage('booking')">
           <i class="fas fa-plus-circle"></i> Nouveau RDV
         </div>
+
+        <!-- Doctor nav -->
+        <div class="sidebar-section-lbl doctor-only">Menu Médical</div>
+        <div class="sidebar-item doctor-only" id="sdb-doc-overview"
+             onclick="switchDashTab('doc-overview')">
+          <i class="fas fa-chart-line"></i> Activité du jour
+        </div>
+        <div class="sidebar-item doctor-only" id="sdb-doc-schedule"
+             onclick="switchDashTab('doc-schedule')">
+          <i class="fas fa-calendar-check"></i> Gestion du Planning
+        </div>
+        <div class="sidebar-item doctor-only" id="sdb-doc-patients"
+             onclick="switchDashTab('doc-patients')">
+          <i class="fas fa-user-injured"></i> Suivi Patient
+        </div>
+        <div class="sidebar-item doctor-only" id="sdb-doc-status"
+             onclick="switchDashTab('doc-status')">
+          <i class="fas fa-stream"></i> Mise à jour des Statuts
+        </div>
+
+        <!-- Shared -->
+        <div class="sidebar-divider"></div>
         <div class="sidebar-item" onclick="openChat()">
           <i class="fas fa-comment-dots"></i> Support en ligne
           <span class="badge">1</span>
         </div>
+
       </div>
 
       <div class="sidebar-footer">
@@ -720,8 +747,85 @@
         </div>
       </div>
 
-      <!-- Onglet — Rendez-vous -->
-      <div class="dash-tab" id="tab-appointments">
+      <div class="dash-tab doctor-only" id="tab-doc-overview">
+        <div class="dash-page-title">Bonjour, <span id="dashDocName">Dr.</span> 🩺</div>
+        <div class="dash-page-sub">Voici vos consultations programmées pour aujourd'hui</div>
+      
+        <!-- Stats — populated by initDoctorDashboard() -->
+        <div class="stats-grid"></div>
+      
+        <!-- Today's list — populated by initDoctorDashboard() -->
+        <div class="data-table-wrap" style="margin-top:24px;">
+          <div class="table-toolbar">
+            <span class="table-title">
+              <i class="fas fa-list-ul" style="color:var(--teal);margin-right:8px;"></i>
+              Planning du Jour
+            </span>
+          </div>
+          <div id="docTodayList">
+            <div style="text-align:center;padding:30px;color:var(--muted);">
+              <i class="fas fa-spinner fa-spin"></i> Chargement…
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="dash-tab doctor-only" id="tab-doc-schedule">
+        <div class="dash-page-title">Gestion du Planning & Disponibilités</div>
+        <div class="dash-page-sub">Consultez et naviguez dans vos créneaux de consultation semaine par semaine</div>
+        <div class="data-table-wrap" style="padding:20px;">
+          <div id="docScheduleContainer">
+            <div style="text-align:center;padding:40px;color:var(--muted);">
+              <i class="fas fa-spinner fa-spin" style="font-size:24px;"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── NEW: tab-doc-patients ── -->
+      <div class="dash-tab doctor-only" id="tab-doc-patients">
+        <div class="dash-page-title">Suivi Clinique des Patients</div>
+        <div class="dash-page-sub">
+          Tous les patients ayant eu un rendez-vous avec vous — cliquez sur une ligne pour voir l'historique
+        </div>
+        <div class="data-table-wrap">
+          <div class="table-toolbar">
+            <span class="table-title">
+              <i class="fas fa-users" style="color:var(--teal);margin-right:8px;"></i>
+              Mes Patients
+            </span>
+            <div class="table-search">
+              <i class="fas fa-search"></i>
+              <input type="text"
+                     placeholder="Nom, e-mail ou téléphone…"
+                     oninput="filterDocPatients(this.value)">
+            </div>
+          </div>
+          <div id="docPatientsContainer" style="padding:20px;">
+            <div style="text-align:center;padding:40px;color:var(--muted);">
+              <i class="fas fa-spinner fa-spin" style="font-size:24px;"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── NEW: tab-doc-status ── -->
+      <div class="dash-tab doctor-only" id="tab-doc-status">
+        <div class="dash-page-title">Mise à jour des Statuts de Consultation</div>
+        <div class="dash-page-sub">
+          Gérez la file d'attente en temps réel — En attente → En consultation → Terminé
+        </div>
+        <div class="data-table-wrap" style="padding:20px;">
+          <div id="docStatusContainer">
+            <div style="text-align:center;padding:40px;color:var(--muted);">
+              <i class="fas fa-spinner fa-spin" style="font-size:24px;"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Onglet — Rendez-vous (patient only) -->
+      <div class="dash-tab patient-only" id="tab-appointments">
         <div class="dash-page-title">Mes Rendez-vous</div>
         <div class="dash-page-sub">
           Gérez et consultez tous vos rendez-vous à venir
@@ -731,15 +835,15 @@
         </div>
       </div>
 
-      <!-- Onglet — Historique -->
-      <div class="dash-tab" id="tab-history">
+      <!-- Onglet — Historique (patient only) -->
+      <div class="dash-tab patient-only" id="tab-history">
         <div class="dash-page-title">Historique des Consultations</div>
         <div class="dash-page-sub">Vos visites et consultations passées</div>
         <div id="historyList"></div>
       </div>
 
-      <!-- Onglet — Profil -->
-      <div class="dash-tab" id="tab-profile">
+      <!-- Onglet — Profil (patient only) -->
+      <div class="dash-tab patient-only" id="tab-profile">
         <div class="dash-page-title">Mon Profil</div>
         <div class="dash-page-sub">
           Gérez vos informations personnelles et vos préférences
@@ -825,7 +929,44 @@
           </button>
         </div>
 
-        <div class="stats-grid" id="adminStats"></div>
+        <div class="stats-grid" id="adminStats">
+          <!-- Card 1: Total Appointments -->
+          <div class="stat-card">
+            <div class="stat-top">
+              <div class="stat-icon" style="background:#e0f7fa;color:var(--teal);"><i class="fas fa-calendar-alt"></i></div>
+              <div class="stat-trend up"><i class="fas fa-arrow-up"></i>+3 today</div>
+            </div>
+            <div class="stat-val" id="stat-total-appointments">0</div>
+            <div class="stat-lbl">Total Appointments</div>
+          </div>
+          <!-- Card 2: Pending Review -->
+          <div class="stat-card">
+            <div class="stat-top">
+              <div class="stat-icon" style="background:#fff3e0;color:#f57c00;"><i class="fas fa-clock"></i></div>
+              <div class="stat-trend down"><i class="fas fa-arrow-down"></i>Need attention</div>
+            </div>
+            <div class="stat-val" id="stat-pending-review">0</div>
+            <div class="stat-lbl">Pending Review</div>
+          </div>
+          <!-- Card 3: Confirmed -->
+          <div class="stat-card">
+            <div class="stat-top">
+              <div class="stat-icon" style="background:#e8f5e9;color:#388e3c;"><i class="fas fa-check-circle"></i></div>
+              <div class="stat-trend up"><i class="fas fa-arrow-up"></i>This week</div>
+            </div>
+            <div class="stat-val" id="stat-confirmed-appointments">0</div>
+            <div class="stat-lbl">Confirmed</div>
+          </div>
+          <!-- Card 4: Total Patients -->
+          <div class="stat-card">
+            <div class="stat-top">
+              <div class="stat-icon" style="background:#f3e5f5;color:#7b1fa2;"><i class="fas fa-users"></i></div>
+              <div class="stat-trend up"><i class="fas fa-arrow-up"></i>+1 new</div>
+            </div>
+            <div class="stat-val" id="stat-total-patients">0</div>
+            <div class="stat-lbl">Total Patients</div>
+          </div>
+        </div>
 
         <div class="grid-2 mt-6">
           <!-- Rendez-vous récents -->
@@ -838,11 +979,38 @@
                 Voir tout
               </button>
             </div>
-            <div id="adminRecentApts"></div>
+            <div id="adminRecentApts">
+              <div style="overflow-x:auto;">
+                <table class="data-table" style="width:100%;">
+                  <thead>
+                    <tr>
+                      <th>Patient</th>
+                      <th>Service</th>
+                      <th>Date</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody id="adminRecentAppointmentsTable">
+                    <tr>
+                      <td colspan="4" style="text-align:center;padding:20px;color:var(--muted);">
+                        <i class="fas fa-spinner fa-spin" style="margin-right:8px;"></i> Loading appointments...
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
           </div>
 
           <!-- Fil d'activité -->
-          <div id="adminActivityFeed"></div>
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden;display:flex;flex-direction:column;">
+            <div class="table-toolbar"><span class="table-title">Activity Feed</span></div>
+            <div style="padding:0 16px;" id="adminActivityFeed">
+              <div style="padding:20px;text-align:center;color:var(--muted);">
+                <i class="fas fa-spinner fa-spin" style="margin-right:8px;"></i> Loading activities...
+              </div>
+            </div>
+          </div>
         </div>
       </div><!-- /atab-overview -->
 
@@ -890,7 +1058,30 @@
                      oninput="filterPatients(this.value)">
             </div>
           </div>
-          <div id="adminPatientsTable"></div>
+          <div id="adminPatientsTable">
+            <div style="overflow-x:auto;">
+              <table class="data-table" style="width:100%;">
+                <thead>
+                  <tr>
+                    <th>Patient</th>
+                    <th>Contact</th>
+                    <th>Blood Type</th>
+                    <th>Insurance</th>
+                    <th>Visits</th>
+                    <th>Last Visit</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody id="adminPatientTable">
+                  <tr>
+                    <td colspan="7" style="text-align:center;padding:20px;color:var(--muted);">
+                      <i class="fas fa-spinner fa-spin" style="margin-right:8px;"></i> Loading patients...
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
       </div><!-- /atab-patients -->
 
@@ -1108,4 +1299,4 @@
 <!-- Script principal -->
 <script src="./JS/script.js"></script>
 </body>
-</html>
+</html> 
