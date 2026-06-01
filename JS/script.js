@@ -281,11 +281,6 @@ async function loadAllAppointmentsTable() {
 document.addEventListener('DOMContentLoaded', () => {
   // Vos initialisations existantes...
 
-  // Ajout des chargements dynamiques SQL :
-  if (typeof loadAdminDashboard === 'function') {
-    loadAdminDashboard();
-  }
-
   // Déclenche l'affichage complet des rendez-vous
   loadAllAppointmentsTable();
 });
@@ -413,7 +408,7 @@ const TESTIMONIALS_DATA = [
 
 const CHAT_AUTO_RESPONSES = [
   "Thank you for reaching out! One of our care coordinators will be with you shortly. 😊",
-  "Our clinic is open Monday–Friday 8AM–6PM and Saturday 9AM–2PM. For urgent matters, please call +1 (202) 555-0100.",
+  "Our clinic is open Monday–Friday 8AM–6PM and Saturday 9AM–2PM. For urgent matters, please call +212 688 003 790.",
   "We accept most major insurance plans including Blue Cross, Aetna, UnitedHealth, Cigna, and Humana. Would you like us to verify your specific plan?",
   "You can book appointments online through our website or call us directly. Same-day slots may be available for urgent consultations!",
   "All medical records are kept strictly confidential and fully HIPAA compliant.",
@@ -648,6 +643,34 @@ async function handleRegister(e) {
   }
 }
 
+
+// ── setDashboardRole ────────────────────────────────────────────────────────
+// Pose la classe CSS de rôle sur <body> et met à jour le nom affiché.
+// Le CSS dans styles.css pilote ensuite la visibilité de .patient-only / .doctor-only
+function setDashboardRole(role, fullName) {
+  // 1. Nettoyer les classes de rôle précédentes
+  document.body.classList.remove('role-patient', 'role-doctor', 'role-admin');
+
+  // 2. Poser la nouvelle classe
+  const cssRole = (role === 'doctor') ? 'role-doctor'
+    : (role === 'admin') ? 'role-doctor'  // admin uses same sidebar as doctor
+      : 'role-patient';
+  document.body.classList.add(cssRole);
+
+  // 3. Mettre à jour le nom affiché selon le rôle
+  if (role === 'doctor') {
+    const el = document.getElementById('dashDocName');
+    if (el) el.textContent = 'Dr. ' + fullName;
+  } else {
+    const el = document.getElementById('dashUserName');
+    if (el) el.textContent = fullName.split(' ')[0];
+    const dateEl = document.getElementById('dashDate');
+    if (dateEl) dateEl.textContent = new Date().toLocaleDateString(
+      'fr-FR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }
+    );
+  }
+}
+
 function doLogout() {
   App.currentUser = null;
   sessionStorage.removeItem('ncUser');
@@ -791,7 +814,7 @@ function renderStep1() {
   // 1. Fetch live doctors from database if not already loaded
   if (!App.dynamicDoctors) {
     App.dynamicDoctors = [];
-    fetch('api/get_doctors.php')
+    fetch('api/get_doctors.php', { credentials: 'include' })
       .then(res => res.json())
       .then(data => {
         if (data.success) {
@@ -1052,100 +1075,135 @@ function prevBookingStep() {
 }
 
 function submitBooking() {
-  console.log("Tentative d'envoi du formulaire...");
 
   if (typeof App === 'undefined' || !App.bookingData) {
-    alert("Erreur système : Les données de réservation sont introuvables.");
+    showToast('Erreur système : données de réservation introuvables.', 'error');
     return;
   }
 
-  let formattedDate = "";
+  // ── Formatage de la date ──────────────────────────────────────────
+  let formattedDate = '';
   try {
     if (App.bookingData.date) {
-      if (App.bookingData.date instanceof Date) {
-        formattedDate = App.bookingData.date.toISOString().split('T')[0];
-      } else {
-        formattedDate = String(App.bookingData.date).split('T')[0];
-      }
+      formattedDate = App.bookingData.date instanceof Date
+        ? App.bookingData.date.toISOString().split('T')[0]
+        : String(App.bookingData.date).split('T')[0];
     }
   } catch (e) {
-    formattedDate = App.bookingData.date || "";
+    formattedDate = App.bookingData.date || '';
+  }
+
+  // ── Conversion heure 12h → 24h ────────────────────────────────────
+  function formatTimeTo24h(timeStr) {
+    if (!timeStr) return '';
+    if (!timeStr.includes('AM') && !timeStr.includes('PM')) return timeStr;
+    const [time, modifier] = timeStr.trim().split(' ');
+    let [hours, minutes] = time.split(':');
+    if (hours === '12') hours = '00';
+    if (modifier === 'PM') hours = parseInt(hours, 10) + 12;
+    return `${String(hours).padStart(2, '0')}:${minutes}`;
   }
 
   const payload = {
     doctor_id: App.bookingData.doctorId ? parseInt(App.bookingData.doctorId, 10) : 0,
     appointment_date: formattedDate,
-    appointment_time: App.bookingData.time || "",
-    reason: App.bookingData.notes || "Consultation"
+    appointment_time: formatTimeTo24h(App.bookingData.time || ''),
+    reason: App.bookingData.notes || 'Consultation',
   };
 
-  fetch('/OptiMed/api/create_appointment.php', {
+  console.log('[submitBooking] payload envoyé :', payload);
+
+  const btn = document.getElementById('confirmBookBtn');
+  if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Envoi…'; }
+
+  fetch('api/create_appointment.php', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload)
+    credentials: 'include',
+    body: JSON.stringify(payload),
   })
-    .then(res => {
-      if (res.ok) {
-        // 🔥 ZONE MODIFIÉE : Rendu stylisé au lieu de l'alert() classique
-        const container = document.getElementById('bookingContent');
-        if (container) {
+    .then(async res => {
+      const text = await res.text();
+      console.log('[submitBooking] réponse brute serveur :', text);
 
-          // On récupère proprement les données pour le récapitulatif graphique
-          const d = App.bookingData;
-          const dateOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-          const displayDate = d.date instanceof Date ? d.date.toLocaleDateString('fr-FR', dateOptions) : d.date;
-
-          // On injecte un magnifique composant UI de succès
-          container.innerHTML = `
-            <div class="booking-card anim-fadeUp" style="text-align: center; padding: 50px 30px; background: #ffffff; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.04); max-width: 600px; margin: 30px auto;">
-              
-              <div style="width: 90px; height: 90px; background: #ecfdf5; color: #10b981; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 46px; margin: 0 auto 24px auto; box-shadow: 0 10px 20px rgba(16, 185, 129, 0.1);">
-                <i class="fas fa-check-circle"></i>
-              </div>
-  
-              <h2 style="color: #1e293b; font-weight: 800; font-size: 26px; margin-bottom: 10px; letter-spacing: -0.5px;">Rendez-vous Confirmé !</h2>
-              <p style="color: #64748b; font-size: 15px; margin-bottom: 35px; line-height: 1.6;">
-                Merci <strong>${d.name || 'Patient'}</strong>, votre demande a été enregistrée avec succès. Un e-mail récapitulatif vous a été envoyé à l'adresse <span style="color:#0284c7;">${d.email || ''}</span>.
-              </p>
-  
-              <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 16px; padding: 24px; text-align: left; margin-bottom: 40px;">
-                <h4 style="margin-top: 0; margin-bottom: 16px; font-size: 14px; color: #1e293b; text-transform: uppercase; letter-spacing: 0.5px; display: flex; align-items: center; gap: 8px;">
-                  <i class="fas fa-receipt" style="color: #0284c7;"></i> Détails de la consultation
-                </h4>
-                
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; font-size: 14px; color: #475569;">
-                  <div><span style="color: #94a3b8; block-size: auto;">Médecin :</span><br><strong style="color: #1e293b;">${d.doctor || 'Médecin sélectionné'}</strong></div>
-                  <div><span style="color: #94a3b8;">Spécialité :</span><br><strong style="color: #1e293b;">${d.service || 'Consultation Générale'}</strong></div>
-                  <div><span style="color: #94a3b8;">Date :</span><br><strong style="color: #1e293b; text-transform: capitalize;">${displayDate || '—'}</strong></div>
-                  <div><span style="color: #94a3b8;">Heure du RDV :</span><br><strong style="color: #1e293b;">${d.time || '—'}</strong></div>
-                </div>
-              </div>
-  
-              <button onclick="window.location.reload()" style="background: #0284c7; color: white; border: none; padding: 14px 32px; border-radius: 12px; font-weight: 600; font-size: 15px; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 12px rgba(2, 132, 199, 0.2);">
-                Retourner à l'accueil <i class="fas fa-arrow-right" style="margin-left: 8px; font-size: 13px;"></i>
-              </button>
-            </div>
-          `;
-
-          // Cache la barre de navigation inférieure pour ne pas laisser les boutons Edit/Confirm flotter
-          const globalNav = document.querySelector('.booking-nav');
-          if (globalNav) {
-            globalNav.style.display = 'none';
-          }
-
-          // Marquer visuellement l'étape 4 comme complétée dans le stepper du haut
-          const step4 = document.getElementById('step4');
-          if (step4) {
-            step4.classList.add('completed');
-          }
-        }
+      let data;
+      try {
+        data = JSON.parse(text);
+      } catch (e) {
+        console.error('[submitBooking] réponse non-JSON :', text);
+        showToast('Erreur serveur — voir console pour détails.', 'error');
+        if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fas fa-check"></i> Confirm Booking'; }
         return;
       }
-      throw new Error("Erreur réseau");
+
+      if (!data.success) {
+        console.error('[submitBooking] échec API :', data.message);
+        showToast(data.message || 'Erreur lors de la réservation.', 'error');
+        if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fas fa-check"></i> Confirm Booking'; }
+        return;
+      }
+
+      // ── Succès ────────────────────────────────────────────────────
+      const container = document.getElementById('bookingContent');
+      if (container) {
+        const d = App.bookingData;
+        const dateOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        const displayDate = d.date instanceof Date
+          ? d.date.toLocaleDateString('fr-FR', dateOptions)
+          : d.date;
+
+        container.innerHTML = `
+          <div class="booking-card anim-fadeUp"
+               style="text-align:center;padding:50px 30px;background:#fff;border-radius:20px;
+                      box-shadow:0 10px 30px rgba(0,0,0,.04);max-width:600px;margin:30px auto;">
+            <div style="width:90px;height:90px;background:#ecfdf5;color:#10b981;border-radius:50%;
+                        display:flex;align-items:center;justify-content:center;font-size:46px;
+                        margin:0 auto 24px;box-shadow:0 10px 20px rgba(16,185,129,.1);">
+              <i class="fas fa-check-circle"></i>
+            </div>
+            <h2 style="color:#1e293b;font-weight:800;font-size:26px;margin-bottom:10px;">
+              Rendez-vous Confirmé !
+            </h2>
+            <p style="color:#64748b;font-size:15px;margin-bottom:35px;line-height:1.6;">
+              Merci <strong>${d.name || 'Patient'}</strong>, votre demande a été enregistrée.
+            </p>
+            <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:16px;
+                        padding:24px;text-align:left;margin-bottom:40px;">
+              <h4 style="margin:0 0 16px;font-size:14px;color:#1e293b;text-transform:uppercase;
+                         letter-spacing:.5px;display:flex;align-items:center;gap:8px;">
+                <i class="fas fa-receipt" style="color:#0284c7;"></i> Détails de la consultation
+              </h4>
+              <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+                          gap:16px;font-size:14px;color:#475569;">
+                <div><span style="color:#94a3b8;">Médecin :</span><br>
+                     <strong style="color:#1e293b;">${d.doctor || '—'}</strong></div>
+                <div><span style="color:#94a3b8;">Spécialité :</span><br>
+                     <strong style="color:#1e293b;">${d.service || 'Consultation Générale'}</strong></div>
+                <div><span style="color:#94a3b8;">Date :</span><br>
+                     <strong style="color:#1e293b;text-transform:capitalize;">${displayDate || '—'}</strong></div>
+                <div><span style="color:#94a3b8;">Heure :</span><br>
+                     <strong style="color:#1e293b;">${d.time || '—'}</strong></div>
+              </div>
+            </div>
+            <button onclick="goPage('dashboard')"
+              style="background:var(--teal,#0284c7);color:#fff;border:none;padding:14px 32px;
+                     border-radius:12px;font-weight:600;font-size:15px;cursor:pointer;
+                     box-shadow:0 4px 12px rgba(2,132,199,.2);">
+              Voir mes rendez-vous
+              <i class="fas fa-arrow-right" style="margin-left:8px;font-size:13px;"></i>
+            </button>
+          </div>`;
+
+        const globalNav = document.querySelector('.booking-nav');
+        if (globalNav) globalNav.style.display = 'none';
+        document.getElementById('step4')?.classList.add('completed');
+        if (typeof initDashboard === 'function') initDashboard();
+      }
     })
     .catch(err => {
-      console.error("Erreur Fetch :", err);
-      alert("Une erreur est survenue lors de la confirmation.");
+      console.error('[submitBooking] erreur réseau :', err);
+      showToast('Erreur réseau. Vérifiez votre connexion et réessayez.', 'error');
+      if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fas fa-check"></i> Confirm Booking'; }
     });
 }
 
@@ -1176,7 +1234,7 @@ async function initDashboard() {
   // ── Fetch appointments from the server ────────────────────────────────
   let myApts = [];
   try {
-    const res = await fetch('api/get_appointments.php');
+    const res = await fetch('api/get_appointments.php', { credentials: 'include' });
     const data = await res.json();
     if (data.success) {
       myApts = data.appointments;
@@ -1193,7 +1251,8 @@ async function initDashboard() {
   const completed = myApts.filter(a => a.status === 'completed');
 
   // ── Stats (unchanged rendering logic) ────────────────────────────────
-  document.getElementById('dashStats').innerHTML = [
+  const dashStats = document.getElementById('dashStats');
+  if (dashStats) dashStats.innerHTML = [
     { icon: 'calendar-check', color: '#e0f7fa', iconColor: 'var(--teal)', val: upcoming.length, lbl: 'Upcoming Visits', trend: '+1', up: true },
     { icon: 'check-circle', color: '#e8f5e9', iconColor: '#388e3c', val: completed.length, lbl: 'Completed', trend: `${myApts.length} total`, up: true },
     { icon: 'clock', color: '#fff3e0', iconColor: '#f57c00', val: upcoming[0]?.date || 'None', lbl: 'Next Appointment', trend: '', up: true },
@@ -1238,7 +1297,7 @@ async function initDashboard() {
   if (qa) qa.innerHTML = [
     { icon: 'calendar-plus', title: 'Book Appointment', desc: 'Schedule a new visit', color: 'var(--teal)', action: `goPage('booking')` },
     { icon: 'comment-dots', title: 'Live Chat Support', desc: 'Chat with our team', color: '#7b1fa2', action: `openChat()` },
-    { icon: 'phone-alt', title: 'Call Us', desc: '+1 (202) 555-0100', color: '#388e3c', action: `showToast('Calling +1 (202) 555-0100…','info')` },
+    { icon: 'phone-alt', title: 'Call Us', desc: '+212 688 003 790', color: '#388e3c', action: `showToast('Calling +212 688 003 790…','info')` },
     { icon: 'file-medical', title: 'Medical Records', desc: 'View your documents', color: '#f57c00', action: `showToast('Medical records coming soon','info')` },
   ].map(a => `
       <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px;display:flex;align-items:center;gap:14px;cursor:pointer;transition:.2s;"
@@ -1258,7 +1317,7 @@ async function initDashboard() {
 
 async function initDoctorDashboard() {
   try {
-    const res = await fetch('api/get_doctor_stats.php');
+    const res = await fetch('api/get_doctor_stats.php', { credentials: 'include' });
     const data = await res.json();
 
     if (!data.success) {
@@ -1268,85 +1327,163 @@ async function initDoctorDashboard() {
 
     const { total_today, pending, completed, next_apt } = data.stats;
 
-    // ── Stat cards ──────────────────────────────────────────────────────────
-    const statsGrid = document.querySelector('#tab-doc-overview .stats-grid');
-    if (statsGrid) {
-      statsGrid.innerHTML = [
-        {
-          icon: 'calendar-day', color: '#e0f7fa', iconColor: 'var(--teal)',
-          val: total_today,
-          lbl: 'Consultations du Jour',
-          trend: total_today > 0 ? 'Programmées' : 'Aucune',
-          up: true
-        },
-        {
-          icon: 'hourglass-half', color: '#fff8e1', iconColor: '#f59e0b',
-          val: pending,
-          lbl: 'En Attente',
-          trend: pending > 0 ? 'Salle d\'attente' : 'File vide',
-          up: pending > 0
-        },
-        {
-          icon: 'check-circle', color: '#e8f5e9', iconColor: '#388e3c',
-          val: completed,
-          lbl: 'Terminées',
-          trend: total_today > 0 ? `${Math.round(completed / total_today * 100)}%` : '—',
-          up: true
-        },
-        {
-          icon: 'clock', color: '#f3e5f5', iconColor: '#7b1fa2',
-          val: next_apt ? next_apt.appointment_time : '—',
-          lbl: 'Prochain Patient',
-          trend: next_apt ? next_apt.patient_name : 'Aucun',
-          up: true
-        },
-      ].map(s => `
-          <div class="stat-card">
-            <div class="stat-top">
-              <div class="stat-icon" style="background:${s.color};color:${s.iconColor};">
-                <i class="fas fa-${s.icon}"></i>
-              </div>
-              <div class="stat-trend ${s.up ? 'up' : 'down'}" style="font-size:11px;">
-                ${s.trend}
-              </div>
-            </div>
-            <div class="stat-val">${s.val}</div>
-            <div class="stat-lbl">${s.lbl}</div>
-          </div>`).join('');
+    // ── Badge date du jour ─────────────────────────────────────────
+    const badge = document.getElementById('docTodayDateBadge');
+    if (badge) {
+      badge.textContent = new Date().toLocaleDateString('fr-FR', {
+        weekday: 'long', day: 'numeric', month: 'long'
+      });
     }
 
-    // ── Today's appointment mini-list ────────────────────────────────────────
+    // ── KPI Cards ──────────────────────────────────────────────────
+    const statsGrid = document.getElementById('docStatsGrid');
+    if (statsGrid) {
+      const cards = [
+        {
+          icon: 'calendar-day',
+          bg: 'linear-gradient(135deg,#0a7c6e,#0fb8a4)',
+          val: total_today,
+          lbl: 'Consultations du Jour',
+          sub: total_today > 0 ? `${completed} terminée(s)` : 'Aucune programmée',
+        },
+        {
+          icon: 'hourglass-half',
+          bg: 'linear-gradient(135deg,#f59e0b,#fbbf24)',
+          val: pending,
+          lbl: 'En Attente',
+          sub: pending > 0 ? 'En salle d\'attente' : 'File vide',
+        },
+        {
+          icon: 'check-circle',
+          bg: 'linear-gradient(135deg,#388e3c,#4caf50)',
+          val: completed,
+          lbl: 'Terminées',
+          sub: total_today > 0
+            ? `${Math.round(completed / total_today * 100)}% du planning`
+            : '—',
+        },
+        {
+          icon: 'user-clock',
+          bg: 'linear-gradient(135deg,#7b1fa2,#ab47bc)',
+          val: next_apt ? next_apt.appointment_time : '—',
+          lbl: 'Prochain Patient',
+          sub: next_apt ? next_apt.patient_name : 'Aucun à venir',
+        },
+      ];
+
+      statsGrid.innerHTML = cards.map(c => `
+        <div style="
+          background:${c.bg};
+          border-radius:16px;
+          padding:20px 22px;
+          color:#fff;
+          box-shadow:0 4px 20px rgba(0,0,0,.08);
+          position:relative;
+          overflow:hidden;
+        ">
+          <!-- Cercle décoratif -->
+          <div style="position:absolute;right:-16px;top:-16px;width:80px;height:80px;
+                      border-radius:50%;background:rgba(255,255,255,.12);"></div>
+          <div style="position:absolute;right:16px;bottom:-20px;width:60px;height:60px;
+                      border-radius:50%;background:rgba(255,255,255,.08);"></div>
+
+          <div style="display:flex;align-items:center;justify-content:space-between;
+                      margin-bottom:16px;position:relative;">
+            <div style="width:42px;height:42px;background:rgba(255,255,255,.2);
+                        border-radius:12px;display:flex;align-items:center;
+                        justify-content:center;font-size:18px;">
+              <i class="fas fa-${c.icon}"></i>
+            </div>
+          </div>
+
+          <div style="font-size:28px;font-weight:800;letter-spacing:-1px;
+                      margin-bottom:4px;position:relative;">
+            ${c.val}
+          </div>
+          <div style="font-size:13px;font-weight:600;opacity:.9;
+                      margin-bottom:4px;position:relative;">
+            ${c.lbl}
+          </div>
+          <div style="font-size:11px;opacity:.7;position:relative;">
+            ${c.sub}
+          </div>
+        </div>`).join('');
+    }
+
+    // ── Planning du jour ───────────────────────────────────────────
     const listContainer = document.getElementById('docTodayList');
     if (listContainer) {
-      if (!data.today_list.length) {
+      if (!data.today_list || !data.today_list.length) {
         listContainer.innerHTML = `
-            <div style="text-align:center;padding:30px;color:var(--muted);">
-              <i class="fas fa-calendar-check" style="font-size:28px;margin-bottom:10px;opacity:.4;display:block;"></i>
-              Aucune consultation programmée pour aujourd'hui.
-            </div>`;
+          <div style="text-align:center;padding:40px;color:var(--muted);">
+            <i class="fas fa-calendar-check"
+               style="font-size:32px;margin-bottom:12px;opacity:.3;display:block;"></i>
+            <div style="font-weight:600;margin-bottom:4px;">
+              Aucune consultation programmée pour aujourd'hui
+            </div>
+            <div style="font-size:12px;">
+              Consultez le planning pour les autres jours.
+            </div>
+          </div>`;
       } else {
-        listContainer.innerHTML = `
-            <div style="overflow-x:auto;">
-              <table class="data-table">
-                <thead>
-                  <tr>
-                    <th>Heure</th>
-                    <th>Patient</th>
-                    <th>Motif</th>
-                    <th>Statut</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  ${data.today_list.map(apt => `
-                    <tr>
-                      <td style="font-weight:700;">${apt.time}</td>
-                      <td>${apt.patient_name}</td>
-                      <td style="color:var(--muted);font-size:12px;">${apt.reason || 'Consultation générale'}</td>
-                      <td><span class="status-badge status-${apt.status}">${apt.status}</span></td>
-                    </tr>`).join('')}
-                </tbody>
-              </table>
-            </div>`;
+        const statusLabel = {
+          pending: 'En attente',
+          confirmed: 'Confirmé',
+          completed: 'Terminé',
+          cancelled: 'Annulé',
+        };
+        const statusStyle = {
+          pending: 'background:#fff8e1;color:#b45309;',
+          confirmed: 'background:#e0f7fa;color:#0a7c6e;',
+          completed: 'background:#e8f5e9;color:#388e3c;',
+          cancelled: 'background:#fce4ec;color:#c62828;',
+        };
+
+        listContainer.innerHTML = data.today_list.map((apt, i) => `
+          <div style="
+            display:flex;align-items:center;gap:14px;
+            padding:14px 20px;
+            border-bottom:${i < data.today_list.length - 1 ? '1px solid var(--border)' : 'none'};
+            transition:background .15s;
+          " onmouseover="this.style.background='var(--bg)'"
+             onmouseout="this.style.background='transparent'">
+
+            <!-- Heure -->
+            <div style="width:52px;flex-shrink:0;text-align:center;">
+              <div style="font-size:15px;font-weight:800;color:var(--teal);">
+                ${apt.time}
+              </div>
+            </div>
+
+            <!-- Séparateur vertical -->
+            <div style="width:2px;height:36px;background:var(--border);
+                        border-radius:2px;flex-shrink:0;"></div>
+
+            <!-- Avatar + infos -->
+            <div style="width:36px;height:36px;border-radius:50%;
+                        background:var(--teal-pale);color:var(--teal);
+                        display:flex;align-items:center;justify-content:center;
+                        font-weight:700;font-size:13px;flex-shrink:0;">
+              ${apt.patient_name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)}
+            </div>
+
+            <div style="flex:1;min-width:0;">
+              <div style="font-weight:700;font-size:14px;margin-bottom:2px;">
+                ${apt.patient_name}
+              </div>
+              <div style="font-size:12px;color:var(--muted);
+                          white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+                ${apt.reason || 'Consultation générale'}
+              </div>
+            </div>
+
+            <!-- Badge statut -->
+            <span style="padding:4px 12px;border-radius:20px;font-size:11px;
+                         font-weight:700;flex-shrink:0;
+                         ${statusStyle[apt.status] || ''}">
+              ${statusLabel[apt.status] || apt.status}
+            </span>
+          </div>`).join('');
       }
     }
 
@@ -1370,7 +1507,7 @@ async function initDocSchedule(weekStart = null) {
 
   try {
     const url = 'api/get_doctor_schedule.php' + (weekStart ? `?week_start=${weekStart}` : '');
-    const res = await fetch(url);
+    const res = await fetch(url, { credentials: 'include' });
     const data = await res.json();
 
     if (!data.success) {
@@ -1402,7 +1539,7 @@ async function initDocPatients() {
       </div>`;
 
     try {
-      const res = await fetch('api/get_doctor_patients.php');
+      const res = await fetch('api/get_doctor_patients.php', { credentials: 'include' });
       const data = await res.json();
       if (!data.success) {
         container.innerHTML = `<p style="color:var(--rose);padding:20px;">${data.message}</p>`;
@@ -1572,10 +1709,161 @@ function togglePatientHistory(rowId) {
   row.style.display = isHidden ? 'table-row' : 'none';
 }
 
+async function initDocStatus() {
+  const container = document.getElementById('docStatusContainer');
+  if (!container) return;
+
+  container.innerHTML = `
+    <div style="text-align:center;padding:40px;color:var(--muted);">
+      <i class="fas fa-spinner fa-spin" style="font-size:24px;"></i>
+    </div>`;
+
+  try {
+    const res = await fetch('api/get_doctor_stats.php', { credentials: 'include' });
+    const data = await res.json();
+
+    if (!data.success) {
+      container.innerHTML = `<p style="color:var(--rose);padding:20px;">${data.message}</p>`;
+      return;
+    }
+
+    if (!data.today_list || !data.today_list.length) {
+      container.innerHTML = `
+        <div style="text-align:center;padding:50px 20px;color:var(--muted);">
+          <i class="fas fa-calendar-check"
+             style="font-size:36px;margin-bottom:14px;opacity:.35;display:block;"></i>
+          <div style="font-weight:600;margin-bottom:6px;">Aucun rendez-vous aujourd'hui</div>
+          <div style="font-size:12px;">Consultez le planning pour les autres jours.</div>
+        </div>`;
+      return;
+    }
+
+    const labelMap = {
+      pending: 'En attente',
+      confirmed: 'Confirmé',
+      completed: 'Terminé',
+      cancelled: 'Annulé',
+    };
+    const styleMap = {
+      pending: 'background:#fff8e1;color:#b45309;',
+      confirmed: 'background:#e0f7fa;color:#0a7c6e;',
+      completed: 'background:#e8f5e9;color:#388e3c;',
+      cancelled: 'background:#fce4ec;color:#c62828;',
+    };
+    const nextActions = {
+      pending: [{ label: 'Confirmer', icon: 'check', next: 'confirmed' },
+      { label: 'Annuler', icon: 'times', next: 'cancelled' }],
+      confirmed: [{ label: 'Terminer', icon: 'flag-checkered', next: 'completed' },
+      { label: 'Annuler', icon: 'times', next: 'cancelled' }],
+      completed: [],
+      cancelled: [],
+    };
+    const btnColor = { confirmed: 'var(--teal)', completed: '#388e3c', cancelled: '#d94f7a' };
+
+    const rows = data.today_list.map(apt => {
+      const actions = (nextActions[apt.status] || []).map(a => `
+        <button
+          onclick="changeAppointmentStatus(${apt.id}, '${a.next}')"
+          style="font-size:11px;font-weight:700;color:#fff;
+                 background:${btnColor[a.next] || 'var(--teal)'};
+                 border:none;padding:5px 12px;border-radius:8px;
+                 cursor:pointer;margin-right:4px;white-space:nowrap;">
+          <i class="fas fa-${a.icon}" style="margin-right:4px;"></i>${a.label}
+        </button>`).join('');
+
+      return `
+        <tr id="status-row-${apt.id}" style="transition:opacity .3s;">
+          <td style="font-weight:600;">${apt.patient_name}</td>
+          <td style="color:var(--muted);font-size:13px;">${apt.time}</td>
+          <td style="font-size:12px;color:var(--muted);">${apt.reason || 'Consultation'}</td>
+          <td>
+            <span style="padding:4px 10px;border-radius:10px;font-size:12px;
+                         font-weight:700;${styleMap[apt.status] || ''}">
+              ${labelMap[apt.status] || apt.status}
+            </span>
+          </td>
+          <td style="white-space:nowrap;">
+            ${actions || '<span style="color:var(--muted);font-size:12px;">—</span>'}
+          </td>
+        </tr>`;
+    }).join('');
+
+    container.innerHTML = `
+      <div style="overflow-x:auto;">
+        <table class="data-table" style="width:100%;border-collapse:collapse;">
+          <thead>
+            <tr>
+              <th style="text-align:left;padding:10px 12px;font-size:12px;
+                         color:var(--muted);border-bottom:1px solid var(--border);">Patient</th>
+              <th style="text-align:left;padding:10px 12px;font-size:12px;
+                         color:var(--muted);border-bottom:1px solid var(--border);">Heure</th>
+              <th style="text-align:left;padding:10px 12px;font-size:12px;
+                         color:var(--muted);border-bottom:1px solid var(--border);">Motif</th>
+              <th style="text-align:left;padding:10px 12px;font-size:12px;
+                         color:var(--muted);border-bottom:1px solid var(--border);">Statut</th>
+              <th style="text-align:left;padding:10px 12px;font-size:12px;
+                         color:var(--muted);border-bottom:1px solid var(--border);">Actions</th>
+            </tr>
+          </thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>`;
+
+  } catch (err) {
+    container.innerHTML = `<p style="color:var(--rose);padding:20px;">Erreur réseau. Réessayez.</p>`;
+    console.error('initDocStatus:', err);
+  }
+}
+
+async function changeAppointmentStatus(aptId, newStatus) {
+  const row = document.getElementById('status-row-' + aptId);
+  if (row) row.style.opacity = '0.4';
+
+  try {
+    const res = await fetch('api/update_appointment_status.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ id: aptId, status: newStatus }),
+    });
+    const data = await res.json();
+
+    if (data.success) {
+      const labels = { confirmed: 'Confirmé ✓', completed: 'Terminé ✓', cancelled: 'Annulé' };
+      showToast(`Statut mis à jour : ${labels[newStatus] || newStatus}`, 'success');
+      initDocStatus();
+      const overviewTab = document.getElementById('tab-doc-overview');
+      if (overviewTab && overviewTab.classList.contains('active')) {
+        initDoctorDashboard();
+      }
+    } else {
+      if (row) row.style.opacity = '1';
+      showToast(data.message || 'Erreur lors de la mise à jour.', 'error');
+    }
+
+  } catch (err) {
+    if (row) row.style.opacity = '1';
+    showToast('Erreur réseau.', 'error');
+    console.error('changeAppointmentStatus:', err);
+  }
+}
+
 function filterDocPatients(term) {
   const container = document.getElementById('docPatientsContainer');
   if (!container || !docPatientsCache) return;
   renderDocPatients(container, docPatientsCache, term);
+}
+
+
+// Parse 'YYYY-MM-DD' en heure LOCALE — évite le décalage UTC de new Date('YYYY-MM-DD')
+function parseLocalDate(str) {
+  if (!str) return new Date(NaN);
+  const [y, m, d] = str.split('-').map(Number);
+  return new Date(y, m - 1, d);
+}
+// Formate un Date local en 'YYYY-MM-DD' sans passer par toISOString()
+function fmtLocalDate(d) {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
 
 function renderWeekCalendar(container, data) {
@@ -1584,30 +1872,31 @@ function renderWeekCalendar(container, data) {
 
   // Build array of 7 date strings for the week
   const weekDates = Array.from({ length: 7 }, (_, i) => {
-    const d = new Date(data.week_start);
+    const d = parseLocalDate(data.week_start);
     d.setDate(d.getDate() + i);
-    return d.toISOString().split('T')[0];
+    return fmtLocalDate(d);
   });
 
-  const today = new Date().toISOString().split('T')[0];
+  const today = fmtLocalDate(new Date());
 
   // Group appointments by date
   const byDate = {};
-  data.appointments.forEach(apt => {
+  (data.appointments || []).forEach(apt => {
+    if (!apt.date) return;
     if (!byDate[apt.date]) byDate[apt.date] = [];
     byDate[apt.date].push(apt);
   });
 
   // Prev / Next week dates
-  const prevWeek = new Date(data.week_start);
+  const prevWeek = parseLocalDate(data.week_start);
   prevWeek.setDate(prevWeek.getDate() - 7);
-  const nextWeek = new Date(data.week_start);
+  const nextWeek = parseLocalDate(data.week_start);
   nextWeek.setDate(nextWeek.getDate() + 7);
-  const fmt = d => d.toISOString().split('T')[0];
+  const fmt = d => fmtLocalDate(d);
 
   // Header label e.g. "26 Mai – 1 Jun 2026"
-  const startD = new Date(data.week_start);
-  const endD = new Date(data.week_end);
+  const startD = parseLocalDate(data.week_start);
+  const endD = parseLocalDate(data.week_end);
   const weekLabel = `${startD.getDate()} ${MONTHS_FR[startD.getMonth()]} – ${endD.getDate()} ${MONTHS_FR[endD.getMonth()]} ${endD.getFullYear()}`;
 
   container.innerHTML = `
@@ -1629,7 +1918,7 @@ function renderWeekCalendar(container, data) {
     <!-- 7-column grid -->
     <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:10px;">
       ${weekDates.map((dateStr, i) => {
-    const d = new Date(dateStr);
+    const d = parseLocalDate(dateStr);
     const isToday = dateStr === today;
     const slots = byDate[dateStr] || [];
 
@@ -1812,7 +2101,6 @@ function initAdmin() {
   document.getElementById('adminDate').textContent = now.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
   // Stats, recent apts, patients & activity feed are all loaded dynamically
   loadAdminDashboard();
-  renderAdminAptsTable(App.appointments);
   renderAdminChat();
   renderSettings();
 }
@@ -1877,7 +2165,7 @@ async function loadAdminDashboard() {
   const feedContainer = document.getElementById('adminActivityFeed');
 
   try {
-    const res = await fetch('api/get_admin_dashboard.php');
+    const res = await fetch('api/get_admin_dashboard.php', { credentials: 'include' });
 
     // Si le fichier PHP renvoie une erreur système (ex: Erreur 500)
     if (!res.ok) {
@@ -1958,49 +2246,176 @@ async function loadAdminDashboard() {
   }
 }
 
+let _adminAptsCache = [];
+
+async function initAdminAppointments() {
+  const el = document.getElementById('adminAptsTable');
+  if (!el) return;
+
+  el.innerHTML = `
+    <div style="text-align:center;padding:40px;color:var(--muted);">
+      <i class="fas fa-spinner fa-spin" style="font-size:24px;"></i>
+    </div>`;
+
+  try {
+    const res = await fetch('api/get_all_appointments.php', { credentials: 'include' });
+    const data = await res.json();
+    if (!data.success) {
+      el.innerHTML = `<p style="color:var(--rose);padding:20px;">${data.message}</p>`;
+      return;
+    }
+    _adminAptsCache = data.appointments;
+    renderAdminAptsTable(_adminAptsCache);
+  } catch (err) {
+    el.innerHTML = `<p style="color:var(--rose);padding:20px;">Erreur réseau.</p>`;
+    console.error('initAdminAppointments:', err);
+  }
+}
+
 function renderAdminAptsTable(apts) {
   const el = document.getElementById('adminAptsTable');
   if (!el) return;
-  el.innerHTML = `<div style="overflow-x:auto;"><table class="data-table">
-      <thead><tr><th>ID</th><th>Patient</th><th>Doctor</th><th>Service</th><th>Date & Time</th><th>Status</th><th>Action</th></tr></thead>
-      <tbody>${apts.map(a => `
-        <tr>
-          <td style="font-family:var(--mono);font-size:11px;color:var(--muted);">${a.id}</td>
-          <td><div style="font-weight:700;">${a.patient}</div><div style="font-size:11px;color:var(--muted);">${a.email}</div></td>
-          <td style="font-size:12px;">${a.doctor}</td>
-          <td style="font-size:12px;">${a.service}</td>
-          <td><div style="font-weight:600;font-size:13px;">${a.date}</div><div style="font-size:11px;color:var(--muted);">${a.time}</div></td>
-          <td><span class="status-badge status-${a.status}">${a.status}</span></td>
-          <td>
-            <select class="status-select" onchange="updateAdminAptStatus('${a.id}',this.value)">
-              <option value="pending" ${a.status === 'pending' ? 'selected' : ''}>Pending</option>
-              <option value="confirmed" ${a.status === 'confirmed' ? 'selected' : ''}>Confirmed</option>
-              <option value="completed" ${a.status === 'completed' ? 'selected' : ''}>Completed</option>
-              <option value="cancelled" ${a.status === 'cancelled' ? 'selected' : ''}>Cancelled</option>
-            </select>
-          </td>
-        </tr>`).join('')}
-      </tbody></table></div>`;
+
+  const statusLabel = {
+    pending: 'En attente', confirmed: 'Confirmé',
+    completed: 'Terminé', cancelled: 'Annulé'
+  };
+  const statusStyle = {
+    pending: 'background:#fff8e1;color:#b45309;',
+    confirmed: 'background:#e0f7fa;color:#0a7c6e;',
+    completed: 'background:#e8f5e9;color:#388e3c;',
+    cancelled: 'background:#fce4ec;color:#c62828;',
+  };
+
+  if (!apts.length) {
+    el.innerHTML = `
+      <div style="text-align:center;padding:50px;color:var(--muted);">
+        <i class="fas fa-calendar-times"
+           style="font-size:32px;margin-bottom:12px;display:block;opacity:.4;"></i>
+        Aucun rendez-vous trouvé.
+      </div>`;
+    return;
+  }
+
+  el.innerHTML = `
+    <div style="overflow-x:auto;">
+      <table class="data-table" style="width:100%;border-collapse:collapse;">
+        <thead>
+          <tr>
+            <th style="padding:10px 12px;font-size:12px;color:var(--muted);
+                       border-bottom:1px solid var(--border);text-align:left;">ID</th>
+            <th style="padding:10px 12px;font-size:12px;color:var(--muted);
+                       border-bottom:1px solid var(--border);text-align:left;">Patient</th>
+            <th style="padding:10px 12px;font-size:12px;color:var(--muted);
+                       border-bottom:1px solid var(--border);text-align:left;">Médecin</th>
+            <th style="padding:10px 12px;font-size:12px;color:var(--muted);
+                       border-bottom:1px solid var(--border);text-align:left;">Service</th>
+            <th style="padding:10px 12px;font-size:12px;color:var(--muted);
+                       border-bottom:1px solid var(--border);text-align:left;">Date & Heure</th>
+            <th style="padding:10px 12px;font-size:12px;color:var(--muted);
+                       border-bottom:1px solid var(--border);text-align:left;">Statut</th>
+            <th style="padding:10px 12px;font-size:12px;color:var(--muted);
+                       border-bottom:1px solid var(--border);text-align:left;">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${apts.map(a => {
+    const canConfirm = a.status === 'pending';
+    const canComplete = a.status === 'confirmed';
+    const canCancel = ['pending', 'confirmed'].includes(a.status);
+    return `
+              <tr style="border-bottom:1px solid var(--border);">
+                <td style="padding:10px 12px;font-family:monospace;
+                           font-size:11px;color:var(--muted);">#${a.id}</td>
+                <td style="padding:10px 12px;">
+                  <div style="font-weight:700;font-size:13px;">${a.patient}</div>
+                  <div style="font-size:11px;color:var(--muted);">${a.email}</div>
+                </td>
+                <td style="padding:10px 12px;font-size:13px;">${a.doctor}</td>
+                <td style="padding:10px 12px;font-size:12px;
+                           color:var(--muted);">${a.service}</td>
+                <td style="padding:10px 12px;">
+                  <div style="font-weight:600;font-size:13px;">${a.date}</div>
+                  <div style="font-size:11px;color:var(--muted);">${a.time}</div>
+                </td>
+                <td style="padding:10px 12px;">
+                  <span style="padding:4px 10px;border-radius:10px;font-size:12px;
+                               font-weight:700;${statusStyle[a.status] || ''}">
+                    ${statusLabel[a.status] || a.status}
+                  </span>
+                </td>
+                <td style="padding:10px 12px;white-space:nowrap;">
+                  ${canConfirm ? `<button onclick="updateAdminAptStatus(${a.id},'confirmed')"
+                    style="font-size:11px;color:#fff;background:var(--teal);border:none;
+                           padding:5px 10px;border-radius:7px;cursor:pointer;
+                           margin-right:4px;font-weight:700;">
+                    <i class="fas fa-check" style="margin-right:3px;"></i>Confirmer
+                  </button>` : ''}
+                  ${canComplete ? `<button onclick="updateAdminAptStatus(${a.id},'completed')"
+                    style="font-size:11px;color:#fff;background:#388e3c;border:none;
+                           padding:5px 10px;border-radius:7px;cursor:pointer;
+                           margin-right:4px;font-weight:700;">
+                    <i class="fas fa-flag-checkered" style="margin-right:3px;"></i>Terminer
+                  </button>` : ''}
+                  ${canCancel ? `<button onclick="updateAdminAptStatus(${a.id},'cancelled')"
+                    style="font-size:11px;color:#fff;background:#d94f7a;border:none;
+                           padding:5px 10px;border-radius:7px;cursor:pointer;font-weight:700;">
+                    <i class="fas fa-times" style="margin-right:3px;"></i>Annuler
+                  </button>` : ''}
+                  ${!canConfirm && !canComplete && !canCancel
+        ? '<span style="font-size:12px;color:var(--muted);">—</span>' : ''}
+                </td>
+              </tr>`;
+  }).join('')}
+        </tbody>
+      </table>
+    </div>`;
 }
 
-function updateAdminAptStatus(id, status) {
-  const apt = App.appointments.find(a => a.id === id);
-  if (!apt) return;
-  apt.status = status;
-  renderAdminStats();
-  showToast(`Appointment ${id} → ${status}`, 'success');
+async function updateAdminAptStatus(id, newStatus) {
+  try {
+    const res = await fetch('api/update_appointment_status.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ id: parseInt(id, 10), status: newStatus }),
+    });
+    const data = await res.json();
+    if (data.success) {
+      showToast('Statut mis à jour avec succès.', 'success');
+      initAdminAppointments();
+    } else {
+      showToast(data.message || 'Erreur lors de la mise à jour.', 'error');
+    }
+  } catch (err) {
+    showToast('Erreur réseau.', 'error');
+    console.error('updateAdminAptStatus:', err);
+  }
 }
 
 function filterAdminApts(q) {
-  App.filterApts = q.toLowerCase();
-  let apts = App.appointments;
-  if (App.filterApts) apts = apts.filter(a => a.patient.toLowerCase().includes(App.filterApts) || a.service.toLowerCase().includes(App.filterApts) || a.id.toLowerCase().includes(App.filterApts));
-  if (App.filterAptStatus) apts = apts.filter(a => a.status === App.filterAptStatus);
-  renderAdminAptsTable(apts);
+  App.filterApts = (q || '').toLowerCase();
+  _applyAdminAptFilters();
 }
 function filterAdminAptsByStatus(s) {
-  App.filterAptStatus = s;
-  filterAdminApts(App.filterApts);
+  App.filterAptStatus = s || '';
+  _applyAdminAptFilters();
+}
+function _applyAdminAptFilters() {
+  let apts = _adminAptsCache;
+  if (App.filterApts) {
+    const q = App.filterApts;
+    apts = apts.filter(a =>
+      (a.patient || '').toLowerCase().includes(q) ||
+      (a.doctor || '').toLowerCase().includes(q) ||
+      (a.service || '').toLowerCase().includes(q) ||
+      String(a.id).includes(q)
+    );
+  }
+  if (App.filterAptStatus) {
+    apts = apts.filter(a => a.status === App.filterAptStatus);
+  }
+  renderAdminAptsTable(apts);
 }
 
 function renderAdminPatientsTable(pts) {
@@ -2132,6 +2547,7 @@ function switchAdminTab(tab) {
   document.querySelectorAll('[id^="asdb-"]').forEach(i => i.classList.remove('active'));
   document.getElementById(`atab-${tab}`)?.classList.add('active');
   document.getElementById(`asdb-${tab}`)?.classList.add('active');
+  if (tab === 'appointments') initAdminAppointments();
 }
 
 /* ---------
@@ -2369,7 +2785,7 @@ function closeAddDoctorModal() {
 // Call once when the admin page loads to populate the <select>
 async function loadDepartments() {
   try {
-    const res = await fetch('api/get_departments.php');
+    const res = await fetch('api/get_departments.php', { credentials: 'include' });
     const data = await res.json();
     if (!data.success) return;
     const sel = document.getElementById('docDepartment');
@@ -2389,86 +2805,3 @@ async function loadDepartments() {
 --------- */
 initHome();
 document.getElementById('navbar').classList.add('dark-nav');
-
-// =================================================================
-// 🩺 CONFIGURATION ET CORRECTION DU PORTAIL PRATICIEN (FORÇAGE ADMIN)
-// =================================================================
-(function switchAppToDoctorMode() {
-  console.log("⚡ Initialisation du mode Praticien / Administration...");
-
-  // 1. On force l'objet global App à utiliser le compte du médecin
-  if (typeof App !== 'undefined') {
-    App.currentUser = {
-      id: 2,
-      email: 'admin@novacare.com',
-      role: 'admin',
-      firstName: 'Dr. Sarah',
-      lastName: 'Mohamed',
-      initials: 'MM'
-    };
-    App.currentPage = 'dashboard'; // On cible le tableau de bord d'administration
-
-    console.log("✅ Profil utilisateur basculé sur : Dr. Sarah Mohamed (Admin)");
-  }
-
-  // 2. On demande au template de redessiner l'interface graphique avec le nouveau rôle
-  setTimeout(() => {
-    if (typeof render === 'function') render();
-    if (typeof init === 'function') init();
-    if (typeof updateUI === 'function') updateUI();
-    if (typeof renderApp === 'function') renderApp();
-    if (typeof handleNavigation === 'function') handleNavigation('dashboard');
-
-    // Un petit message de confirmation dans votre console de navigateur (F12)
-    console.log("🚀 Interface graphique rechargée en mode Administration.");
-  }, 100);
-})();
-
-// =================================================================
-// 🛡️ GARDIEN TEMPS RÉEL : SUPPRESSION DU MENU PATIENT POUR LE MÉDECIN
-// =================================================================
-(function setupMenuGuard() {
-  function cleanSidebar() {
-    // Si l'utilisateur n'est pas connecté ou est un simple patient, on ne fait rien
-    if (!App.currentUser || (App.currentUser.role !== 'doctor' && App.currentUser.role !== 'admin')) return;
-
-    // On cible tous les petits éléments de menu potentiels
-    const elements = document.querySelectorAll('.sidebar-menu-item, .sidebar-section, .menu-title, li, a, div, span, p');
-
-    elements.forEach(el => {
-      // On récupère le texte en majuscules pour éviter les erreurs de maj/min
-      const text = el.textContent.trim().toUpperCase();
-
-      // Les mots interdits pour le profil médecin/admin
-      if (text === 'PORTAIL PATIENT' || text === 'NOUVEAU RDV' || text === 'MON PROFIL' || text === "VUE D'ENSEMBLE") {
-
-        // On cache l'élément texte
-        el.style.display = 'none';
-
-        // On cache également le conteneur parent (le bouton complet) pour éviter des espaces vides
-        const parentItem = el.closest('.sidebar-menu-item') || el.closest('li') || el.closest('.nav-item');
-        if (parentItem) {
-          parentItem.style.setProperty('display', 'none', 'important');
-        }
-      }
-    });
-  }
-
-  // 1. On lance un premier nettoyage immédiat
-  cleanSidebar();
-
-  // 2. On crée le Gardien qui surveille la page
-  const observer = new MutationObserver(() => {
-    // Dès qu'un élément change sur la page, on repasse un coup de balai
-    cleanSidebar();
-  });
-
-  // 3. On active le gardien dès que la structure de la page existe
-  if (document.body) {
-    observer.observe(document.body, { childList: true, subtree: true });
-  } else {
-    window.addEventListener('DOMContentLoaded', () => {
-      observer.observe(document.body, { childList: true, subtree: true });
-    });
-  }
-})();

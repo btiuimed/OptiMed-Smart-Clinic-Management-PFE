@@ -1,16 +1,19 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>OptiMed — Clinique Générale</title>
-<link rel="icon" href="/logo.png" type="image">
-<!-- Google Fonts -->
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-<!-- Font Awesome 6 -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-<!-- Main stylesheet -->
-<link rel="stylesheet" href="./CSS/styles.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OptiMed — Clinique Générale</title>
+  <link rel="icon" href="/logo.png" type="image">
+  <!-- Google Fonts -->
+  <link
+    href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap"
+    rel="stylesheet">
+  <!-- Font Awesome 6 -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <!-- Main stylesheet -->
+  <link rel="stylesheet" href="./CSS/styles.css">
 </head>
 
 <!-- ═══════════════════════════════════════════════════
@@ -79,19 +82,19 @@
         <!-- id="docDepartment" — CONSERVÉ pour PHP (department_id) -->
         <!-- Les options statiques servent de fallback ; loadDepartments()
              les remplace dynamiquement depuis api/get_departments.php -->
-             <select id="docDepartment" class="form-input dept-select">
-              <option value="">— Sélectionner un département —</option>
-              <option value="1">Cardiologie</option>
-              <option value="2">Neurologie</option>
-              <option value="3">Pédiatrie</option>
-              <option value="4">Médecine Générale</option>
-              <option value="5">Chirurgie</option>
-              <option value="6">Orthopédie</option>
-              <option value="7">Dermatologie</option>
-              <option value="8">Oncologie</option>
-              <option value="9">Ophtalmologie</option>
-              <option value="10">Gastro-entérologie</option>
-            </select>
+        <select id="docDepartment" class="form-input dept-select">
+          <option value="">— Sélectionner un département —</option>
+          <option value="1">Cardiologie</option>
+          <option value="2">Neurologie</option>
+          <option value="3">Pédiatrie</option>
+          <option value="4">Médecine Générale</option>
+          <option value="5">Chirurgie</option>
+          <option value="6">Orthopédie</option>
+          <option value="7">Dermatologie</option>
+          <option value="8">Oncologie</option>
+          <option value="9">Ophtalmologie</option>
+          <option value="10">Gastro-entérologie</option>
+        </select>
       </div>
     </div><!-- /modal-body -->
 
@@ -110,890 +113,969 @@
 
 <body class="role-patient">
 
-<!-- ═══════════════════════════════════════════════════
+  <!-- ═══════════════════════════════════════════════════
      BARRE DE NAVIGATION
 ════════════════════════════════════════════════════ -->
-<nav class="navbar" id="navbar">
-  <div class="nav-inner">
+  <nav class="navbar" id="navbar">
+    <div class="nav-inner">
 
-    <!-- Logo & identité de la clinique -->
-    <div class="nav-logo" onclick="goPage('home')">
-      <div class="nav-logo-icon">
-        <i class="fas fa-hospital-symbol"></i>
+      <!-- Logo & identité de la clinique -->
+      <div class="nav-logo" onclick="goPage('home')">
+        <div class="nav-logo-icon">
+          <i class="fas fa-hospital-symbol"></i>
+        </div>
+        <div id="logo" class="nav-logo-text">
+          <span class="nav-logo-name">OptiMed</span>
+          <span class="nav-logo-sub">Clinique Générale</span>
+        </div>
       </div>
-      <div id="logo" class="nav-logo-text">
-        <span class="nav-logo-name">OptiMed</span>
-        <span class="nav-logo-sub">Clinique Générale</span>
+
+      <!-- Liens principaux -->
+      <div class="nav-links" id="navLinks">
+        <a class="nav-link active" id="nav-home" onclick="goPage('home')">Accueil</a>
+        <a class="nav-link" id="nav-book" onclick="goPage('booking')">Prendre RDV</a>
+        <a class="nav-link" id="nav-contact" onclick="goPage('contact')">Contact</a>
+        <!-- Lien Admin — masqué pour les non-admins via JS -->
+        <a class="nav-link" id="nav-admin" onclick="goPage('admin')" style="display:none">Administration</a>
       </div>
-    </div>
 
-    <!-- Liens principaux -->
-    <div class="nav-links" id="navLinks">
-      <a class="nav-link active" id="nav-home"    onclick="goPage('home')">Accueil</a>
-      <a class="nav-link"        id="nav-book"    onclick="goPage('booking')">Prendre RDV</a>
-      <a class="nav-link"        id="nav-contact" onclick="goPage('contact')">Contact</a>
-      <!-- Lien Admin — masqué pour les non-admins via JS -->
-      <a class="nav-link"        id="nav-admin"   onclick="goPage('admin')" style="display:none">Administration</a>
-    </div>
-
-    <!-- Actions navbar -->
-    <div class="nav-actions" id="navActions">
-      <!-- Bouton Ajouter un médecin — visible uniquement pour les admins -->
-      <button class="btn-add-doctor" id="navAddDoctorBtn"
-              onclick="document.getElementById('addDoctorModal').style.display='flex'"
-              style="display:none;">
-        <i class="fas fa-user-plus"></i>
-        <span class="btn-add-doctor-label">Ajouter médecin</span>
-      </button>
-
-      <button class="btn-ghost"   id="navLoginBtn" onclick="goPage('login')">Connexion</button>
-      <button class="btn-primary" id="navBookBtn"  onclick="goPage('booking')">Réserver</button>
-
-      <!-- Zone utilisateur connecté — gérée par updateNavForUser() -->
-      <span id="navUserArea" style="display:none" class="flex items-center gap-2">
-        <div style="width:32px;height:32px;border-radius:10px;background:var(--teal);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:12px;cursor:pointer;"
-             onclick="goPage('dashboard')" id="navAvatar">MC</div>
-        <button class="btn-ghost" onclick="doLogout()" style="font-size:12px;padding:7px 14px;">
-          Déconnexion
+      <!-- Actions navbar -->
+      <div class="nav-actions" id="navActions">
+        <!-- Bouton Ajouter un médecin — visible uniquement pour les admins -->
+        <button class="btn-add-doctor" id="navAddDoctorBtn"
+          onclick="document.getElementById('addDoctorModal').style.display='flex'" style="display:none;">
+          <i class="fas fa-user-plus"></i>
+          <span class="btn-add-doctor-label">Ajouter médecin</span>
         </button>
-      </span>
+
+        <button class="btn-ghost" id="navLoginBtn" onclick="goPage('login')">Connexion</button>
+        <button class="btn-primary" id="navBookBtn" onclick="goPage('booking')">Réserver</button>
+
+        <!-- Zone utilisateur connecté — gérée par updateNavForUser() -->
+        <span id="navUserArea" style="display:none" class="flex items-center gap-2">
+          <div
+            style="width:32px;height:32px;border-radius:10px;background:var(--teal);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:12px;cursor:pointer;"
+            onclick="goPage('dashboard')" id="navAvatar">MC</div>
+          <button class="btn-ghost" onclick="doLogout()" style="font-size:12px;padding:7px 14px;">
+            Déconnexion
+          </button>
+        </span>
+      </div>
+
+      <!-- Burger mobile -->
+      <div class="burger" onclick="toggleMobileMenu()">
+        <span></span><span></span><span></span>
+      </div>
+
     </div>
+  </nav>
 
-    <!-- Burger mobile -->
-    <div class="burger" onclick="toggleMobileMenu()">
-      <span></span><span></span><span></span>
-    </div>
-
-  </div>
-</nav>
-
-<!-- ═══════════════════════════════════════════════════
+  <!-- ═══════════════════════════════════════════════════
      PAGE — ACCUEIL
 ════════════════════════════════════════════════════ -->
-<div class="page active" id="page-home">
+  <div class="page active" id="page-home">
 
-  <!-- Hero -->
-  <section class="hero">
-    <div class="hero-noise"></div>
-    <div class="hero-orb hero-orb-1"></div>
-    <div class="hero-orb hero-orb-2"></div>
-    <div class="hero-inner">
+    <!-- Hero -->
+    <section class="hero">
+      <div class="hero-noise"></div>
+      <div class="hero-orb hero-orb-1"></div>
+      <div class="hero-orb hero-orb-2"></div>
+      <div class="hero-inner">
 
-      <!-- Contenu textuel -->
-      <div class="hero-content anim-slideRight">
-        <div class="hero-badge">
-          <i class="fas fa-award"></i>
-          Clinique d'Excellence — Certifiée depuis 2008
-        </div>
-        <h1>Des soins d'exception pour<br/>
-            <em>chaque patient,</em><br/>
-            chaque spécialité.</h1>
-        <p class="hero-desc">
-          Des médecins spécialistes certifiés offrant des soins complets et
-          personnalisés — de la cardiologie à la pédiatrie, avec des
-          équipements de diagnostic de pointe.
-        </p>
-        <div class="hero-ctas">
-          <button class="btn-hero-primary" onclick="goPage('booking')">
-            <i class="fas fa-calendar-check"></i> Prendre rendez-vous
-          </button>
-          <button class="btn-hero-outline" onclick="scrollToSection('services')">
-            <i class="fas fa-stethoscope"></i> Nos services
-          </button>
-        </div>
-        <div class="hero-stats">
-          <div class="hero-stat">
-            <div class="hero-stat-val">8 500+</div>
-            <div class="hero-stat-lbl">Patients pris en charge</div>
+        <!-- Contenu textuel -->
+        <div class="hero-content anim-slideRight">
+          <div class="hero-badge">
+            <i class="fas fa-award"></i>
+            Clinique d'Excellence — Certifiée depuis 2008
           </div>
-          <div class="hero-stat-div"></div>
-          <div class="hero-stat">
-            <div class="hero-stat-val">98 %</div>
-            <div class="hero-stat-lbl">Taux de satisfaction</div>
-          </div>
-          <div class="hero-stat-div"></div>
-          <div class="hero-stat">
-            <div class="hero-stat-val">16+</div>
-            <div class="hero-stat-lbl">Années d'excellence</div>
-          </div>
-        </div>
-      </div><!-- /hero-content -->
-
-      <!-- Cartes flottantes spécialités -->
-      <div class="hero-visual anim-slideLeft">
-        <div class="hero-cards-stack">
-          
-          <div class="hero-card">
-            <div class="hero-card-icon">
-              <i class="fa-solid fa-heart-pulse" style="color: #ff4757; font-size: 28px;"></i>
-            </div>
-            <div class="hero-card-title">Cardiologie</div>
-            <div class="hero-card-desc">Suivi cardiaque expert</div>
-          </div>
-
-          <div class="hero-card">
-            <div class="hero-card-icon">
-              <i class="fa-solid fa-brain" style="color: #2575fc; font-size: 26px;"></i>
-            </div>
-            <div class="hero-card-title">Neurologie</div>
-            <div class="hero-card-desc">Diagnostics spécialisés</div>
-          </div>
-
-          <div class="hero-card">
-            <div class="hero-card-icon">
-              <i class="fa-solid fa-baby" style="color: #ff9f43; font-size: 26px;"></i>
-            </div>
-            <div class="hero-card-title">Pédiatrie</div>
-            <div class="hero-card-desc">Soins dédiés aux enfants</div>
-          </div>
-
-          <div class="hero-card">
-            <div class="hero-card-icon">
-              <i class="fa-solid fa-bone" style="color: #1dd1a1; font-size: 26px;"></i>
-            </div>
-            <div class="hero-card-title">Orthopédie</div>
-            <div class="hero-card-desc">Chirurgie & rééducation</div>
-          </div>
-
-        </div>
-      </div>
-
-    </div><!-- /hero-inner -->
-
-    <!-- Vague de transition -->
-    <div class="hero-wave">
-      <svg viewBox="0 0 1440 60" xmlns="http://www.w3.org/2000/svg">
-        <path d="M0,60L1440,60L1440,15Q1200,60,720,20Q480,0,0,35Z" fill="#f7f9fc"/>
-      </svg>
-    </div>
-  </section>
-
-  <!-- Section Services -->
-  <section class="section" id="services">
-    <div class="section-inner">
-      <div class="text-center mb-8">
-        <div class="section-tag">Nos Services</div>
-        <h2 class="section-title">Médecine Générale &amp; <em>Spécialisée</em></h2>
-        <p class="section-desc" style="margin:0 auto;">
-          De la médecine générale aux soins hautement spécialisés,
-          notre équipe pluridisciplinaire vous accompagne à chaque étape.
-        </p>
-      </div>
-      <!-- Grille générée dynamiquement par JS (SERVICES_DATA) -->
-      <div class="services-grid" id="servicesGrid"></div>
-    </div>
-  </section>
-
-  <!-- Section Médecins -->
-  <section class="section doctors-section">
-    <div class="section-inner">
-      <div class="text-center mb-8">
-        <div class="section-tag">Notre Équipe</div>
-        <h2 class="section-title">Nos <em>Médecins</em> Spécialistes</h2>
-        <p class="section-desc" style="margin:0 auto;">
-          Des praticiens certifiés, forts de décennies d'expérience combinée
-          et animés par un engagement commun envers votre santé.
-        </p>
-      </div>
-      <!-- Grille générée dynamiquement par JS (DOCTORS_DATA) -->
-      <div class="doctors-grid" id="doctorsGrid"></div>
-    </div>
-  </section>
-
-  <!-- Section Témoignages -->
-  <section class="section testimonials-section">
-    <div class="section-inner">
-      <div class="text-center mb-8">
-        <div style="display:inline-block;background:rgba(255,255,255,.15);color:rgba(255,255,255,.9);font-size:11px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;padding:6px 14px;border-radius:20px;margin-bottom:14px;">
-          Témoignages
-        </div>
-        <h2 style="font-family:var(--display);font-size:clamp(30px,4vw,46px);color:#fff;margin-bottom:8px;">
-          Ce que Disent nos <em style="color:#7ee8de;">Patients</em>
-        </h2>
-        <p style="color:rgba(255,255,255,.6);font-size:15px;">
-          Des expériences authentiques partagées par nos patients.
-        </p>
-      </div>
-      <!-- Grille générée dynamiquement par JS (TESTIMONIALS_DATA) -->
-      <div class="testimonials-grid" id="testimonialsGrid"></div>
-    </div>
-  </section>
-
-  <!-- Appel à l'action -->
-  <section class="section cta-section">
-    <div class="section-inner">
-      <div class="cta-box">
-        <div class="cta-text">
-          <h2>Prêt à commencer ?</h2>
-          <p>Prenez rendez-vous dès aujourd'hui. Des créneaux disponibles
-             le jour même pour les consultations urgentes.</p>
-        </div>
-        <div class="cta-actions">
-          <button class="btn-cta-white" onclick="goPage('booking')">
-            <i class="fas fa-calendar-plus"></i> Prendre rendez-vous
-          </button>
-          <a href="https://wa.me/212688003790" class="btn-cta-wa" target="_blank">
-            <i class="fab fa-whatsapp" style="font-size:18px;"></i> WhatsApp
-          </a>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Pied de page -->
-  <footer>
-    <div class="footer-inner">
-      <div class="footer-grid">
-        <!-- Colonne Brand -->
-        <div>
-          <div class="footer-brand-name">OptiMed</div>
-          <p class="footer-brand-desc">
-            Clinique pluridisciplinaire dédiée à offrir des soins médicaux
-            bienveillants, avec un engagement constant envers l'excellence
-            clinique et la personnalisation du traitement.
+          <h1>Des soins d'exception pour<br />
+            <em>chaque patient,</em><br />
+            chaque spécialité.
+          </h1>
+          <p class="hero-desc">
+            Des médecins spécialistes certifiés offrant des soins complets et
+            personnalisés — de la cardiologie à la pédiatrie, avec des
+            équipements de diagnostic de pointe.
           </p>
-          <div class="footer-socials">
-            <div class="footer-social"><i class="fab fa-facebook-f"></i></div>
-            <div class="footer-social"><i class="fab fa-instagram"></i></div>
-            <div class="footer-social"><i class="fab fa-twitter"></i></div>
-            <div class="footer-social"><i class="fab fa-linkedin-in"></i></div>
+          <div class="hero-ctas">
+            <button class="btn-hero-primary" onclick="goPage('booking')">
+              <i class="fas fa-calendar-check"></i> Prendre rendez-vous
+            </button>
+            <button class="btn-hero-outline" onclick="scrollToSection('services')">
+              <i class="fas fa-stethoscope"></i> Nos services
+            </button>
+          </div>
+          <div class="hero-stats">
+            <div class="hero-stat">
+              <div class="hero-stat-val">8 500+</div>
+              <div class="hero-stat-lbl">Patients pris en charge</div>
+            </div>
+            <div class="hero-stat-div"></div>
+            <div class="hero-stat">
+              <div class="hero-stat-val">98 %</div>
+              <div class="hero-stat-lbl">Taux de satisfaction</div>
+            </div>
+            <div class="hero-stat-div"></div>
+            <div class="hero-stat">
+              <div class="hero-stat-val">16+</div>
+              <div class="hero-stat-lbl">Années d'excellence</div>
+            </div>
+          </div>
+        </div><!-- /hero-content -->
+
+        <!-- Cartes flottantes spécialités -->
+        <div class="hero-visual anim-slideLeft">
+          <div class="hero-cards-stack">
+
+            <div class="hero-card">
+              <div class="hero-card-icon">
+                <i class="fa-solid fa-heart-pulse" style="color: #ff4757; font-size: 28px;"></i>
+              </div>
+              <div class="hero-card-title">Cardiologie</div>
+              <div class="hero-card-desc">Suivi cardiaque expert</div>
+            </div>
+
+            <div class="hero-card">
+              <div class="hero-card-icon">
+                <i class="fa-solid fa-brain" style="color: #2575fc; font-size: 26px;"></i>
+              </div>
+              <div class="hero-card-title">Neurologie</div>
+              <div class="hero-card-desc">Diagnostics spécialisés</div>
+            </div>
+
+            <div class="hero-card">
+              <div class="hero-card-icon">
+                <i class="fa-solid fa-baby" style="color: #ff9f43; font-size: 26px;"></i>
+              </div>
+              <div class="hero-card-title">Pédiatrie</div>
+              <div class="hero-card-desc">Soins dédiés aux enfants</div>
+            </div>
+
+            <div class="hero-card">
+              <div class="hero-card-icon">
+                <i class="fa-solid fa-bone" style="color: #1dd1a1; font-size: 26px;"></i>
+              </div>
+              <div class="hero-card-title">Orthopédie</div>
+              <div class="hero-card-desc">Chirurgie & rééducation</div>
+            </div>
+
           </div>
         </div>
-        <!-- Spécialités -->
-        <div class="footer-col">
-          <h4>Spécialités</h4>
-          <ul>
-            <li><a>Cardiologie</a></li>
-            <li><a>Pédiatrie</a></li>
-            <li><a>Neurologie</a></li>
-            <li><a>Orthopédie</a></li>
-            <li><a>Dermatologie</a></li>
-            <li><a>Médecine Générale</a></li>
-          </ul>
+
+      </div><!-- /hero-inner -->
+
+      <!-- Vague de transition -->
+      <div class="hero-wave">
+        <svg viewBox="0 0 1440 60" xmlns="http://www.w3.org/2000/svg">
+          <path d="M0,60L1440,60L1440,15Q1200,60,720,20Q480,0,0,35Z" fill="#f7f9fc" />
+        </svg>
+      </div>
+    </section>
+
+    <!-- Section Services -->
+    <section class="section" id="services">
+      <div class="section-inner">
+        <div class="text-center mb-8">
+          <div class="section-tag">Nos Services</div>
+          <h2 class="section-title">Médecine Générale &amp; <em>Spécialisée</em></h2>
+          <p class="section-desc" style="margin:0 auto;">
+            De la médecine générale aux soins hautement spécialisés,
+            notre équipe pluridisciplinaire vous accompagne à chaque étape.
+          </p>
         </div>
-        <!-- Liens rapides -->
-        <div class="footer-col">
-          <h4>Liens rapides</h4>
-          <ul>
-            <li><a onclick="goPage('home')">Accueil</a></li>
-            <li><a onclick="goPage('booking')">Prendre rendez-vous</a></li>
-            <li><a onclick="goPage('login')">Espace patient</a></li>
-            <li><a onclick="goPage('contact')">Nous contacter</a></li>
-          </ul>
+        <!-- Grille générée dynamiquement par JS (SERVICES_DATA) -->
+        <div class="services-grid" id="servicesGrid"></div>
+      </div>
+    </section>
+
+    <!-- Section Médecins -->
+    <section class="section doctors-section">
+      <div class="section-inner">
+        <div class="text-center mb-8">
+          <div class="section-tag">Notre Équipe</div>
+          <h2 class="section-title">Nos <em>Médecins</em> Spécialistes</h2>
+          <p class="section-desc" style="margin:0 auto;">
+            Des praticiens certifiés, forts de décennies d'expérience combinée
+            et animés par un engagement commun envers votre santé.
+          </p>
         </div>
-        <!-- Contact -->
-        <div class="footer-col">
-          <h4>Contact</h4>
-          <ul>
-            <li><a>Avenue 2, 75014 Tetouan</a></li>
-            <li><a>+212 688 003 790</a></li>
-            <li><a>soins@optimed.fr</a></li>
-            <li><a>Lun–Ven : 8h–18h</a></li>
-            <li><a>Sam : 9h–14h</a></li>
-          </ul>
+        <!-- Grille générée dynamiquement par JS (DOCTORS_DATA) -->
+        <div class="doctors-grid" id="doctorsGrid"></div>
+      </div>
+    </section>
+
+    <!-- Section Témoignages -->
+    <section class="section testimonials-section">
+      <div class="section-inner">
+        <div class="text-center mb-8">
+          <div
+            style="display:inline-block;background:rgba(255,255,255,.15);color:rgba(255,255,255,.9);font-size:11px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;padding:6px 14px;border-radius:20px;margin-bottom:14px;">
+            Témoignages
+          </div>
+          <h2 style="font-family:var(--display);font-size:clamp(30px,4vw,46px);color:#fff;margin-bottom:8px;">
+            Ce que Disent nos <em style="color:#7ee8de;">Patients</em>
+          </h2>
+          <p style="color:rgba(255,255,255,.6);font-size:15px;">
+            Des expériences authentiques partagées par nos patients.
+          </p>
+        </div>
+        <!-- Grille générée dynamiquement par JS (TESTIMONIALS_DATA) -->
+        <div class="testimonials-grid" id="testimonialsGrid"></div>
+      </div>
+    </section>
+
+    <!-- Appel à l'action -->
+    <section class="section cta-section">
+      <div class="section-inner">
+        <div class="cta-box">
+          <div class="cta-text">
+            <h2>Prêt à commencer ?</h2>
+            <p>Prenez rendez-vous dès aujourd'hui. Des créneaux disponibles
+              le jour même pour les consultations urgentes.</p>
+          </div>
+          <div class="cta-actions">
+            <button class="btn-cta-white" onclick="goPage('booking')">
+              <i class="fas fa-calendar-plus"></i> Prendre rendez-vous
+            </button>
+            <a href="https://wa.me/212688003790" class="btn-cta-wa" target="_blank">
+              <i class="fab fa-whatsapp" style="font-size:18px;"></i> WhatsApp
+            </a>
+          </div>
         </div>
       </div>
-      <div class="footer-bottom">
-        <span class="footer-copy">
-          © 2026 OptiMed Clinique Générale. Tous droits réservés. Conforme RGPD.
-        </span>
-        <div class="flex gap-3">
-          <a style="font-size:12px;color:rgba(255,255,255,.35);">Politique de confidentialité</a>
-          <a style="font-size:12px;color:rgba(255,255,255,.35);">Mentions légales</a>
+    </section>
+
+    <!-- Pied de page -->
+    <footer>
+      <div class="footer-inner">
+        <div class="footer-grid">
+          <!-- Colonne Brand -->
+          <div>
+            <div class="footer-brand-name">OptiMed</div>
+            <p class="footer-brand-desc">
+              Clinique pluridisciplinaire dédiée à offrir des soins médicaux
+              bienveillants, avec un engagement constant envers l'excellence
+              clinique et la personnalisation du traitement.
+            </p>
+            <div class="footer-socials">
+              <div class="footer-social"><i class="fab fa-facebook-f"></i></div>
+              <div class="footer-social"><i class="fab fa-instagram"></i></div>
+              <div class="footer-social"><i class="fab fa-twitter"></i></div>
+              <div class="footer-social"><i class="fab fa-linkedin-in"></i></div>
+            </div>
+          </div>
+          <!-- Spécialités -->
+          <div class="footer-col">
+            <h4>Spécialités</h4>
+            <ul>
+              <li><a>Cardiologie</a></li>
+              <li><a>Pédiatrie</a></li>
+              <li><a>Neurologie</a></li>
+              <li><a>Orthopédie</a></li>
+              <li><a>Dermatologie</a></li>
+              <li><a>Médecine Générale</a></li>
+            </ul>
+          </div>
+          <!-- Liens rapides -->
+          <div class="footer-col">
+            <h4>Liens rapides</h4>
+            <ul>
+              <li><a onclick="goPage('home')">Accueil</a></li>
+              <li><a onclick="goPage('booking')">Prendre rendez-vous</a></li>
+              <li><a onclick="goPage('login')">Espace patient</a></li>
+              <li><a onclick="goPage('contact')">Nous contacter</a></li>
+            </ul>
+          </div>
+          <!-- Contact -->
+          <div class="footer-col">
+            <h4>Contact</h4>
+            <ul>
+              <li><a>Avenue 2, 75014 Tetouan</a></li>
+              <li><a>+212 688 003 790</a></li>
+              <li><a>soins@optimed.fr</a></li>
+              <li><a>Lun–Ven : 8h–18h</a></li>
+              <li><a>Sam : 9h–14h</a></li>
+            </ul>
+          </div>
+        </div>
+        <div class="footer-bottom">
+          <span class="footer-copy">
+            © 2026 OptiMed Clinique Générale. Tous droits réservés. Conforme RGPD.
+          </span>
+          <div class="flex gap-3">
+            <a style="font-size:12px;color:rgba(255,255,255,.35);">Politique de confidentialité</a>
+            <a style="font-size:12px;color:rgba(255,255,255,.35);">Mentions légales</a>
+          </div>
         </div>
       </div>
-    </div>
-  </footer>
+    </footer>
 
-</div><!-- /page-home -->
+  </div><!-- /page-home -->
 
-<!-- ═══════════════════════════════════════════════════
+  <!-- ═══════════════════════════════════════════════════
      PAGE — CONNEXION
      id="loginForm", id="loginEmail", id="loginPassword",
      id="loginBtn", id="loginBtnText" — TOUS CONSERVÉS
 ════════════════════════════════════════════════════ -->
-<div class="page" id="page-login">
-  <div class="auth-page">
-    <div class="auth-card anim-fadeUp">
-      <div class="auth-header">
-        <div style="width:48px;height:48px;background:rgba(255,255,255,.2);border-radius:14px;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;border:2px solid rgba(255,255,255,.3);">
-          <i class="fas fa-hospital-symbol" style="font-size:20px;color:#fff;"></i>
+  <div class="page" id="page-login">
+    <div class="auth-page">
+      <div class="auth-card anim-fadeUp">
+        <div class="auth-header">
+          <div
+            style="width:48px;height:48px;background:rgba(255,255,255,.2);border-radius:14px;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;border:2px solid rgba(255,255,255,.3);">
+            <i class="fas fa-hospital-symbol" style="font-size:20px;color:#fff;"></i>
+          </div>
+          <h2>Bienvenue</h2>
+          <p>Connectez-vous à votre espace OptiMed</p>
         </div>
-        <h2>Bienvenue</h2>
-        <p>Connectez-vous à votre espace OptiMed</p>
-      </div>
-      <div class="auth-body">
-        <!-- Indice de démo (à retirer en production) -->
-        <div class="demo-hint">
-          <strong>Identifiants de démonstration :</strong><br>
-          Patient : <strong>patient@optimed.fr</strong> / <strong>password</strong><br>
-          Admin : <strong>admin@optimed.fr</strong> / <strong>admin123</strong>
-        </div>
+        <div class="auth-body">
+          <!-- Indice de démo (à retirer en production) -->
+          <div class="demo-hint">
+            <strong>Identifiants de démonstration :</strong><br>
+            Patient : <strong>patient@optimed.fr</strong> / <strong>password</strong><br>
+            Admin : <strong>admin@optimed.fr</strong> / <strong>admin123</strong>
+          </div>
 
-        <!-- action="" et name/id conservés pour PHP -->
-        <form id="loginForm" onsubmit="handleLogin(event)">
-          <div class="form-group">
-            <label class="form-label">Adresse e-mail</label>
-            <div class="input-icon-wrap">
-              <i class="fas fa-envelope"></i>
-              <input type="email" class="form-control" id="loginEmail"
-                     placeholder="vous@exemple.fr" required>
+          <!-- action="" et name/id conservés pour PHP -->
+          <form id="loginForm" onsubmit="handleLogin(event)">
+            <div class="form-group">
+              <label class="form-label">Adresse e-mail</label>
+              <div class="input-icon-wrap">
+                <i class="fas fa-envelope"></i>
+                <input type="email" class="form-control" id="loginEmail" placeholder="vous@exemple.fr" required>
+              </div>
             </div>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Mot de passe</label>
-            <div class="input-icon-wrap" style="position:relative;">
-              <i class="fas fa-lock"></i>
-              <input type="password" class="form-control" id="loginPassword"
-                     placeholder="••••••••" required
-                     style="padding-left:38px;padding-right:44px;">
-              <button type="button"
-                      onclick="togglePassword('loginPassword','eyeLogin')"
-                      style="position:absolute;right:12px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:14px;background:none;border:none;cursor:pointer;">
-                <i class="fas fa-eye" id="eyeLogin"></i>
-              </button>
+            <div class="form-group">
+              <label class="form-label">Mot de passe</label>
+              <div class="input-icon-wrap" style="position:relative;">
+                <i class="fas fa-lock"></i>
+                <input type="password" class="form-control" id="loginPassword" placeholder="••••••••" required
+                  style="padding-left:38px;padding-right:44px;">
+                <button type="button" onclick="togglePassword('loginPassword','eyeLogin')"
+                  style="position:absolute;right:12px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:14px;background:none;border:none;cursor:pointer;">
+                  <i class="fas fa-eye" id="eyeLogin"></i>
+                </button>
+              </div>
             </div>
-          </div>
-          <div class="flex items-center gap-2 mb-4" style="justify-content:space-between;">
-            <label style="font-size:13px;color:var(--text2);display:flex;align-items:center;gap:6px;cursor:pointer;">
-              <input type="checkbox" style="accent-color:var(--teal);"> Se souvenir de moi
-            </label>
-            <a style="font-size:13px;color:var(--teal);font-weight:700;cursor:pointer;">
-              Mot de passe oublié ?
-            </a>
-          </div>
-          <button type="submit" class="btn-submit" id="loginBtn">
-            <span id="loginBtnText">
-              <i class="fas fa-sign-in-alt"></i> Se connecter
-            </span>
-          </button>
-        </form>
+            <div class="flex items-center gap-2 mb-4" style="justify-content:space-between;">
+              <label style="font-size:13px;color:var(--text2);display:flex;align-items:center;gap:6px;cursor:pointer;">
+                <input type="checkbox" style="accent-color:var(--teal);"> Se souvenir de moi
+              </label>
+              <a style="font-size:13px;color:var(--teal);font-weight:700;cursor:pointer;">
+                Mot de passe oublié ?
+              </a>
+            </div>
+            <button type="submit" class="btn-submit" id="loginBtn">
+              <span id="loginBtnText">
+                <i class="fas fa-sign-in-alt"></i> Se connecter
+              </span>
+            </button>
+          </form>
 
-        <div class="auth-footer">
-          Pas encore de compte ? <a onclick="goPage('register')">Créer un compte</a>
+          <div class="auth-footer">
+            Pas encore de compte ? <a onclick="goPage('register')">Créer un compte</a>
+          </div>
         </div>
       </div>
     </div>
-  </div>
-</div><!-- /page-login -->
+  </div><!-- /page-login -->
 
-<!-- ═══════════════════════════════════════════════════
+  <!-- ═══════════════════════════════════════════════════
      PAGE — INSCRIPTION
      id="registerForm" et tous les champs — CONSERVÉS
 ════════════════════════════════════════════════════ -->
-<div class="page" id="page-register">
-  <div class="auth-page">
-    <div class="auth-card anim-fadeUp" style="max-width:560px;">
-      <div class="auth-header">
-        <div style="width:48px;height:48px;background:rgba(255,255,255,.2);border-radius:14px;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;border:2px solid rgba(255,255,255,.3);">
-          <i class="fas fa-user-plus" style="font-size:20px;color:#fff;"></i>
+  <div class="page" id="page-register">
+    <div class="auth-page">
+      <div class="auth-card anim-fadeUp" style="max-width:560px;">
+        <div class="auth-header">
+          <div
+            style="width:48px;height:48px;background:rgba(255,255,255,.2);border-radius:14px;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;border:2px solid rgba(255,255,255,.3);">
+            <i class="fas fa-user-plus" style="font-size:20px;color:#fff;"></i>
+          </div>
+          <h2>Créer un compte</h2>
+          <p>Rejoignez OptiMed en quelques instants</p>
         </div>
-        <h2>Créer un compte</h2>
-        <p>Rejoignez OptiMed en quelques instants</p>
-      </div>
-      <div class="auth-body">
-        <!-- action="" conservé pour PHP (api/register.php appelé par JS) -->
-        <form id="registerForm" onsubmit="handleRegister(event)">
-          <div class="form-row">
-            <div class="form-group">
-              <label class="form-label">Prénom *</label>
-              <!-- id="regFirst" — CONSERVÉ -->
-              <input type="text" class="form-control" id="regFirst"
-                     placeholder="Mohamed" required>
-              <div class="field-error" id="errFirst" style="display:none;"></div>
-            </div>
-            <div class="form-group">
-              <label class="form-label">Nom *</label>
-              <!-- id="regLast" — CONSERVÉ -->
-              <input type="text" class="form-control" id="regLast"
-                     placeholder="Albtiui" required>
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label class="form-label">Adresse e-mail *</label>
-            <div class="input-icon-wrap">
-              <i class="fas fa-envelope"></i>
-              <!-- id="regEmail" — CONSERVÉ -->
-              <input type="email" class="form-control" id="regEmail"
-                     placeholder="albtiui@exemple.fr" required>
-            </div>
-            <div class="field-error" id="errEmail" style="display:none;"></div>
-          </div>
-
-          <div class="form-row">
-            <div class="form-group">
-              <label class="form-label">Date de naissance</label>
-              <!-- id="regDob" — CONSERVÉ -->
-              <input type="date" class="form-control" id="regDob" required>
-            </div>
-            <div class="form-group">
-              <label class="form-label">Téléphone</label>
-              <div class="input-icon-wrap">
-                <i class="fas fa-phone"></i>
-                <!-- id="regPhone" — CONSERVÉ -->
-                <input type="tel" class="form-control" id="regPhone"
-                       placeholder="+212 600 000 000">
+        <div class="auth-body">
+          <!-- action="" conservé pour PHP (api/register.php appelé par JS) -->
+          <form id="registerForm" onsubmit="handleRegister(event)">
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Prénom *</label>
+                <!-- id="regFirst" — CONSERVÉ -->
+                <input type="text" class="form-control" id="regFirst" placeholder="Mohamed" required>
+                <div class="field-error" id="errFirst" style="display:none;"></div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Nom *</label>
+                <!-- id="regLast" — CONSERVÉ -->
+                <input type="text" class="form-control" id="regLast" placeholder="Albtiui" required>
               </div>
             </div>
-          </div>
 
-          <div class="form-group">
-            <label class="form-label">Mot de passe</label>
-            <div class="input-icon-wrap">
-              <i class="fas fa-lock"></i>
-              <!-- id="regPassword" — CONSERVÉ -->
-              <input type="password" class="form-control" id="regPassword"
-                     placeholder="8 car., majuscule &amp; chiffre requis" required
-                     oninput="checkPwdStrength(this.value)">
+            <div class="form-group">
+              <label class="form-label">Adresse e-mail *</label>
+              <div class="input-icon-wrap">
+                <i class="fas fa-envelope"></i>
+                <!-- id="regEmail" — CONSERVÉ -->
+                <input type="email" class="form-control" id="regEmail" placeholder="albtiui@exemple.fr" required>
+              </div>
+              <div class="field-error" id="errEmail" style="display:none;"></div>
             </div>
-            <div class="password-strength mt-4">
-              <div class="password-strength-bar" id="pwdBar" style="width:0;background:var(--rose);"></div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Date de naissance</label>
+                <!-- id="regDob" — CONSERVÉ -->
+                <input type="date" class="form-control" id="regDob" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Téléphone</label>
+                <div class="input-icon-wrap">
+                  <i class="fas fa-phone"></i>
+                  <!-- id="regPhone" — CONSERVÉ -->
+                  <input type="tel" class="form-control" id="regPhone" placeholder="+212 600 000 000">
+                </div>
+              </div>
             </div>
-            <div id="pwdStrengthLabel" style="font-size:11px;margin-top:4px;color:var(--muted);"></div>
-            <div class="field-error" id="errPwd" style="display:none;"></div>
-          </div>
 
-          <div class="form-group">
-            <label class="form-label">Confirmer le mot de passe</label>
-            <div class="input-icon-wrap">
-              <i class="fas fa-lock"></i>
-              <!-- id="regConfirm" — CONSERVÉ -->
-              <input type="password" class="form-control" id="regConfirm"
-                     placeholder="Répétez votre mot de passe" required>
+            <div class="form-group">
+              <label class="form-label">Mot de passe</label>
+              <div class="input-icon-wrap">
+                <i class="fas fa-lock"></i>
+                <!-- id="regPassword" — CONSERVÉ -->
+                <input type="password" class="form-control" id="regPassword"
+                  placeholder="8 car., majuscule &amp; chiffre requis" required oninput="checkPwdStrength(this.value)">
+              </div>
+              <div class="password-strength mt-4">
+                <div class="password-strength-bar" id="pwdBar" style="width:0;background:var(--rose);"></div>
+              </div>
+              <div id="pwdStrengthLabel" style="font-size:11px;margin-top:4px;color:var(--muted);"></div>
+              <div class="field-error" id="errPwd" style="display:none;"></div>
             </div>
-            <div class="field-error" id="errConfirm" style="display:none;"></div>
+
+            <div class="form-group">
+              <label class="form-label">Confirmer le mot de passe</label>
+              <div class="input-icon-wrap">
+                <i class="fas fa-lock"></i>
+                <!-- id="regConfirm" — CONSERVÉ -->
+                <input type="password" class="form-control" id="regConfirm" placeholder="Répétez votre mot de passe"
+                  required>
+              </div>
+              <div class="field-error" id="errConfirm" style="display:none;"></div>
+            </div>
+
+            <div class="form-group" style="margin-bottom:20px;">
+              <label
+                style="display:flex;align-items:flex-start;gap:8px;font-size:13px;color:var(--text2);cursor:pointer;line-height:1.5;">
+                <!-- id="regTerms" — CONSERVÉ -->
+                <input type="checkbox" id="regTerms" style="accent-color:var(--teal);margin-top:2px;" required>
+                J'accepte les
+                <a style="color:var(--teal);font-weight:700;">Conditions d'utilisation</a>
+                et la
+                <a style="color:var(--teal);font-weight:700;">Politique de confidentialité</a>.
+                Mes données sont protégées conformément au RGPD.
+              </label>
+              <div class="field-error" id="errTerms" style="display:none;"></div>
+            </div>
+
+            <!-- id="regBtn" / id="regBtnText" — CONSERVÉS -->
+            <button type="submit" class="btn-submit" id="regBtn">
+              <span id="regBtnText">
+                <i class="fas fa-user-plus"></i> Créer mon compte
+              </span>
+            </button>
+          </form>
+
+          <div class="auth-footer">
+            Déjà un compte ? <a onclick="goPage('login')">Se connecter</a>
           </div>
-
-          <div class="form-group" style="margin-bottom:20px;">
-            <label style="display:flex;align-items:flex-start;gap:8px;font-size:13px;color:var(--text2);cursor:pointer;line-height:1.5;">
-              <!-- id="regTerms" — CONSERVÉ -->
-              <input type="checkbox" id="regTerms"
-                     style="accent-color:var(--teal);margin-top:2px;" required>
-              J'accepte les
-              <a style="color:var(--teal);font-weight:700;">Conditions d'utilisation</a>
-              et la
-              <a style="color:var(--teal);font-weight:700;">Politique de confidentialité</a>.
-              Mes données sont protégées conformément au RGPD.
-            </label>
-            <div class="field-error" id="errTerms" style="display:none;"></div>
-          </div>
-
-          <!-- id="regBtn" / id="regBtnText" — CONSERVÉS -->
-          <button type="submit" class="btn-submit" id="regBtn">
-            <span id="regBtnText">
-              <i class="fas fa-user-plus"></i> Créer mon compte
-            </span>
-          </button>
-        </form>
-
-        <div class="auth-footer">
-          Déjà un compte ? <a onclick="goPage('login')">Se connecter</a>
         </div>
       </div>
     </div>
-  </div>
-</div><!-- /page-register -->
+  </div><!-- /page-register -->
 
-<!-- ═══════════════════════════════════════════════════
+  <!-- ═══════════════════════════════════════════════════
      PAGE — PRISE DE RENDEZ-VOUS (STEPPER)
 ════════════════════════════════════════════════════ -->
-<div class="page" id="page-booking">
-  <div class="booking-page">
-    <div class="booking-inner">
-      <div class="booking-hero anim-fadeUp">
-        <div><i class="fas fa-calendar-check" style="font-size:32px;margin-bottom:10px;opacity:.7;"></i></div>
-        <h1>Prendre Rendez-vous</h1>
-        <p>Choisissez votre service, un créneau disponible
-           et nous confirmons en quelques minutes.</p>
-      </div>
+  <div class="page" id="page-booking">
+    <div class="booking-page">
+      <div class="booking-inner">
+        <div class="booking-hero anim-fadeUp">
+          <div><i class="fas fa-calendar-check" style="font-size:32px;margin-bottom:10px;opacity:.7;"></i></div>
+          <h1>Prendre Rendez-vous</h1>
+          <p>Choisissez votre service, un créneau disponible
+            et nous confirmons en quelques minutes.</p>
+        </div>
 
-      <!-- Stepper — id="step1"…"step4" conservés -->
-      <div class="stepper" id="stepper">
-        <div class="step active" id="step1">
-          <div class="step-num"><i class="fas fa-stethoscope"></i></div>
-          <div class="step-lbl">Service</div>
+        <!-- Stepper — id="step1"…"step4" conservés -->
+        <div class="stepper" id="stepper">
+          <div class="step active" id="step1">
+            <div class="step-num"><i class="fas fa-stethoscope"></i></div>
+            <div class="step-lbl">Service</div>
+          </div>
+          <div class="step" id="step2">
+            <div class="step-num">2</div>
+            <div class="step-lbl">Date &amp; Heure</div>
+          </div>
+          <div class="step" id="step3">
+            <div class="step-num">3</div>
+            <div class="step-lbl">Informations</div>
+          </div>
+          <div class="step" id="step4">
+            <div class="step-num">4</div>
+            <div class="step-lbl">Confirmation</div>
+          </div>
         </div>
-        <div class="step" id="step2">
-          <div class="step-num">2</div>
-          <div class="step-lbl">Date &amp; Heure</div>
-        </div>
-        <div class="step" id="step3">
-          <div class="step-num">3</div>
-          <div class="step-lbl">Informations</div>
-        </div>
-        <div class="step" id="step4">
-          <div class="step-num">4</div>
-          <div class="step-lbl">Confirmation</div>
-        </div>
-      </div>
 
-      <!-- Contenu dynamique injecté par renderBookingStep() -->
-      <div id="bookingContent"></div>
+        <!-- Contenu dynamique injecté par renderBookingStep() -->
+        <div id="bookingContent"></div>
+      </div>
     </div>
-  </div>
-</div><!-- /page-booking -->
+  </div><!-- /page-booking -->
 
-<!-- ═══════════════════════════════════════════════════
+  <!-- ═══════════════════════════════════════════════════
      PAGE — TABLEAU DE BORD PATIENT
      Structure Flexbox : sidebar sticky + dash-content
      Aucun chevauchement grâce à dashboard-layout flex.
 ════════════════════════════════════════════════════ -->
-<div class="page" id="page-dashboard">
-  <div class="dashboard-layout">
+  <div class="page" id="page-dashboard">
+    <div class="dashboard-layout">
 
-    <!-- ── Sidebar Patient ── -->
-    <aside class="sidebar" id="sidebar">
-      <div class="sidebar-brand">
-        <div class="sidebar-brand-icon"><i class="fas fa-hospital-symbol"></i></div>
-        <div>
-          <div class="sidebar-brand-name">OptiMed</div>
-          <div class="sidebar-brand-sub patient-only">Espace Patient</div>
-          <div class="sidebar-brand-sub doctor-only"
-               style="color:#7ee8de;font-weight:700;">Espace Praticien</div>
-        </div>
-      </div>
-
-      <div class="sidebar-nav">
-
-        <!-- Patient nav -->
-        <div class="sidebar-section-lbl patient-only">Portail Patient</div>
-        <div class="sidebar-item active patient-only" id="sdb-overview"
-             onclick="switchDashTab('overview')">
-          <i class="fas fa-th-large"></i> Vue d'ensemble
-        </div>
-        <div class="sidebar-item patient-only" id="sdb-appointments"
-             onclick="switchDashTab('appointments')">
-          <i class="fas fa-calendar-alt"></i> Rendez-vous
-        </div>
-        <div class="sidebar-item patient-only" id="sdb-history"
-             onclick="switchDashTab('history')">
-          <i class="fas fa-history"></i> Historique
-        </div>
-        <div class="sidebar-item patient-only" id="sdb-profile"
-             onclick="switchDashTab('profile')">
-          <i class="fas fa-user-circle"></i> Mon profil
-        </div>
-        <div class="sidebar-divider patient-only"></div>
-        <div class="sidebar-item patient-only" onclick="goPage('booking')">
-          <i class="fas fa-plus-circle"></i> Nouveau RDV
-        </div>
-
-        <!-- Doctor nav -->
-        <div class="sidebar-section-lbl doctor-only">Menu Médical</div>
-        <div class="sidebar-item doctor-only" id="sdb-doc-overview"
-             onclick="switchDashTab('doc-overview')">
-          <i class="fas fa-chart-line"></i> Activité du jour
-        </div>
-        <div class="sidebar-item doctor-only" id="sdb-doc-schedule"
-             onclick="switchDashTab('doc-schedule')">
-          <i class="fas fa-calendar-check"></i> Gestion du Planning
-        </div>
-        <div class="sidebar-item doctor-only" id="sdb-doc-patients"
-             onclick="switchDashTab('doc-patients')">
-          <i class="fas fa-user-injured"></i> Suivi Patient
-        </div>
-        <div class="sidebar-item doctor-only" id="sdb-doc-status"
-             onclick="switchDashTab('doc-status')">
-          <i class="fas fa-stream"></i> Mise à jour des Statuts
-        </div>
-
-        <!-- Shared -->
-        <div class="sidebar-divider"></div>
-        <div class="sidebar-item" onclick="openChat()">
-          <i class="fas fa-comment-dots"></i> Support en ligne
-          <span class="badge">1</span>
-        </div>
-
-      </div>
-
-      <div class="sidebar-footer">
-        <div class="sidebar-item sidebar-logout" onclick="doLogout()">
-          <i class="fas fa-sign-out-alt"></i> Déconnexion
-        </div>
-      </div>
-    </aside><!-- /sidebar -->
-
-    <!-- Overlay mobile pour fermer la sidebar -->
-    <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
-
-    <!-- ── Contenu principal patient ── -->
-    <main class="dash-content">
-      <!-- Bouton hamburger mobile -->
-      <button class="sidebar-toggle-btn" id="sidebarToggleBtn" onclick="toggleSidebar()">
-        <i class="fas fa-bars"></i>
-      </button>
-
-      <!-- Onglet — Vue d'ensemble -->
-      <div class="dash-tab active" id="tab-overview">
-        <div class="dash-page-title">
-          Bienvenue, <span id="dashUserName">Patient</span> 👋
-        </div>
-        <div class="dash-page-sub" id="dashDate"></div>
-        <div class="stats-grid" id="dashStats"></div>
-        <div class="grid-2">
+      <!-- ── Sidebar Patient ── -->
+      <aside class="sidebar" id="sidebar">
+        <div class="sidebar-brand">
+          <div class="sidebar-brand-icon"><i class="fas fa-hospital-symbol"></i></div>
           <div>
-            <h3 style="font-weight:700;font-size:15px;margin-bottom:14px;">
-              Prochains Rendez-vous
-            </h3>
-            <div id="dashUpcoming"></div>
-          </div>
-          <div>
-            <h3 style="font-weight:700;font-size:15px;margin-bottom:14px;">
-              Actions Rapides
-            </h3>
-            <div style="display:flex;flex-direction:column;gap:10px;" id="quickActions"></div>
+            <div class="sidebar-brand-name">OptiMed</div>
+            <div class="sidebar-brand-sub patient-only">Espace Patient</div>
+            <div class="sidebar-brand-sub doctor-only" style="color:#7ee8de;font-weight:700;">Espace Praticien</div>
           </div>
         </div>
-      </div>
 
-      <div class="dash-tab doctor-only" id="tab-doc-overview">
-        <div class="dash-page-title">Bonjour, <span id="dashDocName">Dr.</span> 🩺</div>
-        <div class="dash-page-sub">Voici vos consultations programmées pour aujourd'hui</div>
-      
-        <!-- Stats — populated by initDoctorDashboard() -->
-        <div class="stats-grid"></div>
-      
-        <!-- Today's list — populated by initDoctorDashboard() -->
-        <div class="data-table-wrap" style="margin-top:24px;">
-          <div class="table-toolbar">
-            <span class="table-title">
-              <i class="fas fa-list-ul" style="color:var(--teal);margin-right:8px;"></i>
-              Planning du Jour
-            </span>
+        <div class="sidebar-nav">
+
+          <!-- Patient nav -->
+          <div class="sidebar-section-lbl patient-only">Portail Patient</div>
+          <div class="sidebar-item active patient-only" id="sdb-overview" onclick="switchDashTab('overview')">
+            <i class="fas fa-th-large"></i> Vue d'ensemble
           </div>
-          <div id="docTodayList">
-            <div style="text-align:center;padding:30px;color:var(--muted);">
-              <i class="fas fa-spinner fa-spin"></i> Chargement…
+          <div class="sidebar-item patient-only" id="sdb-appointments" onclick="switchDashTab('appointments')">
+            <i class="fas fa-calendar-alt"></i> Rendez-vous
+          </div>
+          <div class="sidebar-item patient-only" id="sdb-history" onclick="switchDashTab('history')">
+            <i class="fas fa-history"></i> Historique
+          </div>
+          <div class="sidebar-item patient-only" id="sdb-profile" onclick="switchDashTab('profile')">
+            <i class="fas fa-user-circle"></i> Mon profil
+          </div>
+          <div class="sidebar-divider patient-only"></div>
+          <div class="sidebar-item patient-only" onclick="goPage('booking')">
+            <i class="fas fa-plus-circle"></i> Nouveau RDV
+          </div>
+
+          <!-- Doctor nav -->
+          <div class="sidebar-section-lbl doctor-only">Menu Médical</div>
+          <div class="sidebar-item doctor-only" id="sdb-doc-overview" onclick="switchDashTab('doc-overview')">
+            <i class="fas fa-chart-line"></i> Activité du jour
+          </div>
+          <div class="sidebar-item doctor-only" id="sdb-doc-schedule" onclick="switchDashTab('doc-schedule')">
+            <i class="fas fa-calendar-check"></i> Gestion du Planning
+          </div>
+          <div class="sidebar-item doctor-only" id="sdb-doc-patients" onclick="switchDashTab('doc-patients')">
+            <i class="fas fa-user-injured"></i> Suivi Patient
+          </div>
+          <div class="sidebar-item doctor-only" id="sdb-doc-status" onclick="switchDashTab('doc-status')">
+            <i class="fas fa-stream"></i> Mise à jour des Statuts
+          </div>
+
+          <!-- Shared -->
+          <div class="sidebar-divider"></div>
+          <div class="sidebar-item" onclick="openChat()">
+            <i class="fas fa-comment-dots"></i> Support en ligne
+            <span class="badge">1</span>
+          </div>
+
+        </div>
+      </aside><!-- /sidebar -->
+
+      <!-- Overlay mobile pour fermer la sidebar -->
+      <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
+      <!-- ── Contenu principal patient ── -->
+      <main class="dash-content">
+        <!-- Bouton hamburger mobile -->
+        <button class="sidebar-toggle-btn" id="sidebarToggleBtn" onclick="toggleSidebar()">
+          <i class="fas fa-bars"></i>
+        </button>
+
+        <!-- Onglet — Vue d'ensemble -->
+        <div class="dash-tab patient-only active" id="tab-overview">
+          <div class="dash-page-title">
+            Bienvenue, <span id="dashUserName">Patient</span> 👋
+          </div>
+          <div class="dash-page-sub" id="dashDate"></div>
+          <div class="stats-grid" id="dashStats"></div>
+          <div class="grid-2">
+            <div>
+              <h3 style="font-weight:700;font-size:15px;margin-bottom:14px;">
+                Prochains Rendez-vous
+              </h3>
+              <div id="dashUpcoming"></div>
+            </div>
+            <div>
+              <h3 style="font-weight:700;font-size:15px;margin-bottom:14px;">
+                Actions Rapides
+              </h3>
+              <div style="display:flex;flex-direction:column;gap:10px;" id="quickActions"></div>
             </div>
           </div>
         </div>
-      </div>
 
-      <div class="dash-tab doctor-only" id="tab-doc-schedule">
-        <div class="dash-page-title">Gestion du Planning & Disponibilités</div>
-        <div class="dash-page-sub">Consultez et naviguez dans vos créneaux de consultation semaine par semaine</div>
-        <div class="data-table-wrap" style="padding:20px;">
-          <div id="docScheduleContainer">
-            <div style="text-align:center;padding:40px;color:var(--muted);">
-              <i class="fas fa-spinner fa-spin" style="font-size:24px;"></i>
+        <div class="dash-tab doctor-only" id="tab-doc-overview">
+
+          <!-- En-tête avec date -->
+          <div style="display:flex;align-items:center;justify-content:space-between;
+              flex-wrap:wrap;gap:12px;margin-bottom:28px;">
+            <div>
+              <div class="dash-page-title" style="margin-bottom:4px;">
+                Bonjour, <span id="dashDocName">Dr.</span> 👨‍⚕️
+              </div>
+              <div class="dash-page-sub" id="docTodayDate">
+                Voici vos consultations programmées pour aujourd'hui
+              </div>
+            </div>
+            <div style="background:var(--teal-pale);color:var(--teal);padding:8px 16px;
+                border-radius:20px;font-size:13px;font-weight:700;">
+              <i class="fas fa-calendar-day" style="margin-right:6px;"></i>
+              <span id="docTodayDateBadge"></span>
             </div>
           </div>
-        </div>
-      </div>
 
-      <!-- ── NEW: tab-doc-patients ── -->
-      <div class="dash-tab doctor-only" id="tab-doc-patients">
-        <div class="dash-page-title">Suivi Clinique des Patients</div>
-        <div class="dash-page-sub">
-          Tous les patients ayant eu un rendez-vous avec vous — cliquez sur une ligne pour voir l'historique
-        </div>
-        <div class="data-table-wrap">
-          <div class="table-toolbar">
-            <span class="table-title">
-              <i class="fas fa-users" style="color:var(--teal);margin-right:8px;"></i>
-              Mes Patients
-            </span>
-            <div class="table-search">
-              <i class="fas fa-search"></i>
-              <input type="text"
-                     placeholder="Nom, e-mail ou téléphone…"
-                     oninput="filterDocPatients(this.value)">
-            </div>
+          <!-- KPI Cards — remplies par initDoctorDashboard() -->
+          <div id="docStatsGrid" style="
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+    gap:16px;
+    margin-bottom:28px;">
           </div>
-          <div id="docPatientsContainer" style="padding:20px;">
-            <div style="text-align:center;padding:40px;color:var(--muted);">
-              <i class="fas fa-spinner fa-spin" style="font-size:24px;"></i>
-            </div>
-          </div>
-        </div>
-      </div>
 
-      <!-- ── NEW: tab-doc-status ── -->
-      <div class="dash-tab doctor-only" id="tab-doc-status">
-        <div class="dash-page-title">Mise à jour des Statuts de Consultation</div>
-        <div class="dash-page-sub">
-          Gérez la file d'attente en temps réel — En attente → En consultation → Terminé
-        </div>
-        <div class="data-table-wrap" style="padding:20px;">
-          <div id="docStatusContainer">
-            <div style="text-align:center;padding:40px;color:var(--muted);">
-              <i class="fas fa-spinner fa-spin" style="font-size:24px;"></i>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Onglet — Rendez-vous (patient only) -->
-      <div class="dash-tab patient-only" id="tab-appointments">
-        <div class="dash-page-title">Mes Rendez-vous</div>
-        <div class="dash-page-sub">
-          Gérez et consultez tous vos rendez-vous à venir
-        </div>
-        <div class="data-table-wrap">
-          <div id="patientApptsTable"></div>
-        </div>
-      </div>
-
-      <!-- Onglet — Historique (patient only) -->
-      <div class="dash-tab patient-only" id="tab-history">
-        <div class="dash-page-title">Historique des Consultations</div>
-        <div class="dash-page-sub">Vos visites et consultations passées</div>
-        <div id="historyList"></div>
-      </div>
-
-      <!-- Onglet — Profil (patient only) -->
-      <div class="dash-tab patient-only" id="tab-profile">
-        <div class="dash-page-title">Mon Profil</div>
-        <div class="dash-page-sub">
-          Gérez vos informations personnelles et vos préférences
-        </div>
-        <div class="grid-2">
-          <div id="profileCard"></div>
-          <div id="profileForm"></div>
-        </div>
-      </div>
-
-    </main>
-  </div>
-</div><!-- /page-dashboard -->
-
-<!-- ═══════════════════════════════════════════════════
-     PAGE — TABLEAU DE BORD ADMINISTRATEUR
-════════════════════════════════════════════════════ -->
-<div class="page" id="page-admin">
-  <div class="dashboard-layout">
-
-    <!-- ── Sidebar Admin ── -->
-    <aside class="sidebar" id="adminSidebar">
-      <div class="sidebar-brand">
-        <div class="sidebar-brand-icon"><i class="fas fa-hospital-symbol"></i></div>
-        <div>
-          <div class="sidebar-brand-name">OptiMed</div>
-          <div class="sidebar-brand-sub">Administration</div>
-        </div>
-      </div>
-
-      <div class="sidebar-nav">
-        <div class="sidebar-section-lbl">Panneau Admin</div>
-        <div class="sidebar-item active" id="asdb-overview"
-             onclick="switchAdminTab('overview')">
-          <i class="fas fa-chart-pie"></i> Tableau de bord
-        </div>
-        <div class="sidebar-item" id="asdb-appointments"
-             onclick="switchAdminTab('appointments')">
-          <i class="fas fa-calendar-alt"></i> Rendez-vous
-        </div>
-        <div class="sidebar-item" id="asdb-patients"
-             onclick="switchAdminTab('patients')">
-          <i class="fas fa-users"></i> Patients
-        </div>
-        <div class="sidebar-item" id="asdb-chat"
-             onclick="switchAdminTab('chat')">
-          <i class="fas fa-comments"></i> Messagerie
-          <span class="badge">2</span>
-        </div>
-        <div class="sidebar-divider"></div>
-        <div class="sidebar-item" id="asdb-settings"
-             onclick="switchAdminTab('settings')">
-          <i class="fas fa-cog"></i> Paramètres
-        </div>
-      </div>
-
-      <div class="sidebar-footer">
-        <div class="sidebar-item sidebar-logout" onclick="doLogout()">
-          <i class="fas fa-sign-out-alt"></i> Déconnexion
-        </div>
-      </div>
-    </aside><!-- /adminSidebar -->
-
-    <div class="sidebar-overlay" id="adminSidebarOverlay" onclick="closeSidebar()"></div>
-
-    <!-- ── Contenu principal admin ── -->
-    <main class="dash-content">
-      <button class="sidebar-toggle-btn" id="adminSidebarToggleBtn" onclick="toggleSidebar()">
-        <i class="fas fa-bars"></i>
-      </button>
-
-      <!-- Onglet — Vue d'ensemble Admin -->
-      <div class="dash-tab active" id="atab-overview">
-        <div class="dash-page-header">
-          <div>
-            <div class="dash-page-title">Tableau de Bord Admin</div>
-            <div class="dash-page-sub" id="adminDate"></div>
-          </div>
-          <!-- Bouton Ajouter médecin dans la zone header admin -->
-          <button class="btn-add-doctor-inline"
-                  onclick="document.getElementById('addDoctorModal').style.display='flex'">
-            <i class="fas fa-user-plus"></i> Ajouter un médecin
-          </button>
-        </div>
-
-        <div class="stats-grid" id="adminStats">
-          <!-- Card 1: Total Appointments -->
-          <div class="stat-card">
-            <div class="stat-top">
-              <div class="stat-icon" style="background:#e0f7fa;color:var(--teal);"><i class="fas fa-calendar-alt"></i></div>
-              <div class="stat-trend up"><i class="fas fa-arrow-up"></i>+3 today</div>
-            </div>
-            <div class="stat-val" id="stat-total-appointments">0</div>
-            <div class="stat-lbl">Total Appointments</div>
-          </div>
-          <!-- Card 2: Pending Review -->
-          <div class="stat-card">
-            <div class="stat-top">
-              <div class="stat-icon" style="background:#fff3e0;color:#f57c00;"><i class="fas fa-clock"></i></div>
-              <div class="stat-trend down"><i class="fas fa-arrow-down"></i>Need attention</div>
-            </div>
-            <div class="stat-val" id="stat-pending-review">0</div>
-            <div class="stat-lbl">Pending Review</div>
-          </div>
-          <!-- Card 3: Confirmed -->
-          <div class="stat-card">
-            <div class="stat-top">
-              <div class="stat-icon" style="background:#e8f5e9;color:#388e3c;"><i class="fas fa-check-circle"></i></div>
-              <div class="stat-trend up"><i class="fas fa-arrow-up"></i>This week</div>
-            </div>
-            <div class="stat-val" id="stat-confirmed-appointments">0</div>
-            <div class="stat-lbl">Confirmed</div>
-          </div>
-          <!-- Card 4: Total Patients -->
-          <div class="stat-card">
-            <div class="stat-top">
-              <div class="stat-icon" style="background:#f3e5f5;color:#7b1fa2;"><i class="fas fa-users"></i></div>
-              <div class="stat-trend up"><i class="fas fa-arrow-up"></i>+1 new</div>
-            </div>
-            <div class="stat-val" id="stat-total-patients">0</div>
-            <div class="stat-lbl">Total Patients</div>
-          </div>
-        </div>
-
-        <div class="grid-2 mt-6">
-          <!-- Rendez-vous récents -->
-          <div class="data-table-wrap">
-            <div class="table-toolbar">
-              <span class="table-title">Rendez-vous récents</span>
-              <button class="btn-primary"
-                      style="font-size:12px;padding:7px 14px;"
-                      onclick="switchAdminTab('appointments')">
-                Voir tout
+          <!-- Planning du jour -->
+          <div style="background:var(--surface);border:1px solid var(--border);
+              border-radius:16px;overflow:hidden;">
+            <div style="padding:16px 20px;border-bottom:1px solid var(--border);
+                display:flex;align-items:center;justify-content:space-between;">
+              <span style="font-weight:700;font-size:15px;display:flex;align-items:center;gap:8px;">
+                <i class="fas fa-list-ul" style="color:var(--teal);"></i>
+                Planning du Jour
+              </span>
+              <button onclick="switchDashTab('doc-status')" style="font-size:12px;color:var(--teal);background:var(--teal-pale);
+               border:none;padding:6px 14px;border-radius:8px;
+               font-weight:700;cursor:pointer;">
+                Mettre à jour les statuts →
               </button>
             </div>
-            <div id="adminRecentApts">
+            <div id="docTodayList" style="padding:8px 0;">
+              <div style="text-align:center;padding:30px;color:var(--muted);">
+                <i class="fas fa-spinner fa-spin"></i> Chargement…
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="dash-tab doctor-only" id="tab-doc-schedule">
+          <div class="dash-page-title">Gestion du Planning & Disponibilités</div>
+          <div class="dash-page-sub">Consultez et naviguez dans vos créneaux de consultation semaine par semaine</div>
+          <div class="data-table-wrap" style="padding:20px;">
+            <div id="docScheduleContainer">
+              <div style="text-align:center;padding:40px;color:var(--muted);">
+                <i class="fas fa-spinner fa-spin" style="font-size:24px;"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── NEW: tab-doc-patients ── -->
+        <div class="dash-tab doctor-only" id="tab-doc-patients">
+          <div class="dash-page-title">Suivi Clinique des Patients</div>
+          <div class="dash-page-sub">
+            Tous les patients ayant eu un rendez-vous avec vous — cliquez sur une ligne pour voir l'historique
+          </div>
+          <div class="data-table-wrap">
+            <div class="table-toolbar">
+              <span class="table-title">
+                <i class="fas fa-users" style="color:var(--teal);margin-right:8px;"></i>
+                Mes Patients
+              </span>
+              <div class="table-search">
+                <i class="fas fa-search"></i>
+                <input type="text" placeholder="Nom, e-mail ou téléphone…" oninput="filterDocPatients(this.value)">
+              </div>
+            </div>
+            <div id="docPatientsContainer" style="padding:20px;">
+              <div style="text-align:center;padding:40px;color:var(--muted);">
+                <i class="fas fa-spinner fa-spin" style="font-size:24px;"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── NEW: tab-doc-status ── -->
+        <div class="dash-tab doctor-only" id="tab-doc-status">
+          <div class="dash-page-title">Mise à jour des Statuts de Consultation</div>
+          <div class="dash-page-sub">
+            Gérez la file d'attente en temps réel — En attente → En consultation → Terminé
+          </div>
+          <div class="data-table-wrap" style="padding:20px;">
+            <div id="docStatusContainer">
+              <div style="text-align:center;padding:40px;color:var(--muted);">
+                <i class="fas fa-spinner fa-spin" style="font-size:24px;"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Onglet — Rendez-vous (patient only) -->
+        <div class="dash-tab patient-only" id="tab-appointments">
+          <div class="dash-page-title">Mes Rendez-vous</div>
+          <div class="dash-page-sub">
+            Gérez et consultez tous vos rendez-vous à venir
+          </div>
+          <div class="data-table-wrap">
+            <div id="patientApptsTable"></div>
+          </div>
+        </div>
+
+        <!-- Onglet — Historique (patient only) -->
+        <div class="dash-tab patient-only" id="tab-history">
+          <div class="dash-page-title">Historique des Consultations</div>
+          <div class="dash-page-sub">Vos visites et consultations passées</div>
+          <div id="historyList"></div>
+        </div>
+
+        <!-- Onglet — Profil (patient only) -->
+        <div class="dash-tab patient-only" id="tab-profile">
+          <div class="dash-page-title">Mon Profil</div>
+          <div class="dash-page-sub">
+            Gérez vos informations personnelles et vos préférences
+          </div>
+          <div class="grid-2">
+            <div id="profileCard"></div>
+            <div id="profileForm"></div>
+          </div>
+        </div>
+
+      </main>
+    </div>
+  </div><!-- /page-dashboard -->
+
+  <!-- ═══════════════════════════════════════════════════
+     PAGE — TABLEAU DE BORD ADMINISTRATEUR
+════════════════════════════════════════════════════ -->
+  <div class="page" id="page-admin">
+    <div class="dashboard-layout">
+
+      <!-- ── Sidebar Admin ── -->
+      <aside class="sidebar" id="adminSidebar">
+        <div class="sidebar-brand">
+          <div class="sidebar-brand-icon"><i class="fas fa-hospital-symbol"></i></div>
+          <div>
+            <div class="sidebar-brand-name">OptiMed</div>
+            <div class="sidebar-brand-sub">Administration</div>
+          </div>
+        </div>
+
+        <div class="sidebar-nav">
+          <div class="sidebar-section-lbl">Panneau Admin</div>
+          <div class="sidebar-item active" id="asdb-overview" onclick="switchAdminTab('overview')">
+            <i class="fas fa-chart-pie"></i> Tableau de bord
+          </div>
+          <div class="sidebar-item" id="asdb-appointments" onclick="switchAdminTab('appointments')">
+            <i class="fas fa-calendar-alt"></i> Rendez-vous
+          </div>
+          <div class="sidebar-item" id="asdb-patients" onclick="switchAdminTab('patients')">
+            <i class="fas fa-users"></i> Patients
+          </div>
+          <div class="sidebar-item" id="asdb-chat" onclick="switchAdminTab('chat')">
+            <i class="fas fa-comments"></i> Messagerie
+            <span class="badge">2</span>
+          </div>
+          <div class="sidebar-divider"></div>
+          <div class="sidebar-item" id="asdb-settings" onclick="switchAdminTab('settings')">
+            <i class="fas fa-cog"></i> Paramètres
+          </div>
+        </div>
+
+      </aside><!-- /adminSidebar -->
+
+      <div class="sidebar-overlay" id="adminSidebarOverlay" onclick="closeSidebar()"></div>
+
+      <!-- ── Contenu principal admin ── -->
+      <main class="dash-content">
+        <button class="sidebar-toggle-btn" id="adminSidebarToggleBtn" onclick="toggleSidebar()">
+          <i class="fas fa-bars"></i>
+        </button>
+
+        <!-- Onglet — Vue d'ensemble Admin -->
+        <div class="dash-tab active" id="atab-overview">
+          <div class="dash-page-header">
+            <div>
+              <div class="dash-page-title">Tableau de Bord Admin</div>
+              <div class="dash-page-sub" id="adminDate"></div>
+            </div>
+            <!-- Bouton Ajouter médecin dans la zone header admin -->
+            <button class="btn-add-doctor-inline"
+              onclick="document.getElementById('addDoctorModal').style.display='flex'">
+              <i class="fas fa-user-plus"></i> Ajouter un médecin
+            </button>
+          </div>
+
+          <div class="stats-grid" id="adminStats">
+            <!-- Card 1: Total Appointments -->
+            <div class="stat-card">
+              <div class="stat-top">
+                <div class="stat-icon" style="background:#e0f7fa;color:var(--teal);"><i class="fas fa-calendar-alt"></i>
+                </div>
+                <div class="stat-trend up"><i class="fas fa-arrow-up"></i>+3 today</div>
+              </div>
+              <div class="stat-val" id="stat-total-appointments">0</div>
+              <div class="stat-lbl">Total Appointments</div>
+            </div>
+            <!-- Card 2: Pending Review -->
+            <div class="stat-card">
+              <div class="stat-top">
+                <div class="stat-icon" style="background:#fff3e0;color:#f57c00;"><i class="fas fa-clock"></i></div>
+                <div class="stat-trend down"><i class="fas fa-arrow-down"></i>Need attention</div>
+              </div>
+              <div class="stat-val" id="stat-pending-review">0</div>
+              <div class="stat-lbl">Pending Review</div>
+            </div>
+            <!-- Card 3: Confirmed -->
+            <div class="stat-card">
+              <div class="stat-top">
+                <div class="stat-icon" style="background:#e8f5e9;color:#388e3c;"><i class="fas fa-check-circle"></i>
+                </div>
+                <div class="stat-trend up"><i class="fas fa-arrow-up"></i>This week</div>
+              </div>
+              <div class="stat-val" id="stat-confirmed-appointments">0</div>
+              <div class="stat-lbl">Confirmed</div>
+            </div>
+            <!-- Card 4: Total Patients -->
+            <div class="stat-card">
+              <div class="stat-top">
+                <div class="stat-icon" style="background:#f3e5f5;color:#7b1fa2;"><i class="fas fa-users"></i></div>
+                <div class="stat-trend up"><i class="fas fa-arrow-up"></i>+1 new</div>
+              </div>
+              <div class="stat-val" id="stat-total-patients">0</div>
+              <div class="stat-lbl">Total Patients</div>
+            </div>
+          </div>
+
+          <div class="grid-2 mt-6">
+            <!-- Rendez-vous récents -->
+            <div class="data-table-wrap">
+              <div class="table-toolbar">
+                <span class="table-title">Rendez-vous récents</span>
+                <button class="btn-primary" style="font-size:12px;padding:7px 14px;"
+                  onclick="switchAdminTab('appointments')">
+                  Voir tout
+                </button>
+              </div>
+              <div id="adminRecentApts">
+                <div style="overflow-x:auto;">
+                  <table class="data-table" style="width:100%;">
+                    <thead>
+                      <tr>
+                        <th>Patient</th>
+                        <th>Service</th>
+                        <th>Date</th>
+                        <th>Status</th>
+                      </tr>
+                    </thead>
+                    <tbody id="adminRecentAppointmentsTable">
+                      <tr>
+                        <td colspan="4" style="text-align:center;padding:20px;color:var(--muted);">
+                          <i class="fas fa-spinner fa-spin" style="margin-right:8px;"></i> Loading appointments...
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+            <!-- Fil d'activité -->
+            <div
+              style="background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden;display:flex;flex-direction:column;">
+              <div class="table-toolbar"><span class="table-title">Activity Feed</span></div>
+              <div style="padding:0 16px;" id="adminActivityFeed">
+                <div style="padding:20px;text-align:center;color:var(--muted);">
+                  <i class="fas fa-spinner fa-spin" style="margin-right:8px;"></i> Loading activities...
+                </div>
+              </div>
+            </div>
+          </div>
+        </div><!-- /atab-overview -->
+
+        <!-- Onglet — Gestion des RDV -->
+        <div class="dash-tab" id="atab-appointments">
+          <div class="dash-page-title">Gestion des Rendez-vous</div>
+          <div class="dash-page-sub">
+            Consultez, confirmez ou reprogrammez les rendez-vous des patients
+          </div>
+          <div class="data-table-wrap">
+            <div class="table-toolbar">
+              <span class="table-title">Tous les Rendez-vous</span>
+              <div class="flex gap-2">
+                <div class="table-search">
+                  <i class="fas fa-search"></i>
+                  <input type="text" placeholder="Rechercher…" oninput="filterAdminApts(this.value)">
+                </div>
+                <select class="status-select" onchange="filterAdminAptsByStatus(this.value)">
+                  <option value="">Tous les statuts</option>
+                  <option value="pending">En attente</option>
+                  <option value="confirmed">Confirmé</option>
+                  <option value="completed">Terminé</option>
+                  <option value="cancelled">Annulé</option>
+                </select>
+              </div>
+            </div>
+            <div id="adminAptsTable"></div>
+          </div>
+        </div><!-- /atab-appointments -->
+
+        <!-- Onglet — Gestion Patients -->
+        <div class="dash-tab" id="atab-patients">
+          <div class="dash-page-title">Gestion des Patients</div>
+          <div class="dash-page-sub">
+            Consultez et gérez les profils des patients enregistrés
+          </div>
+          <div class="data-table-wrap">
+            <div class="table-toolbar">
+              <span class="table-title">Tous les Patients</span>
+              <div class="table-search">
+                <i class="fas fa-search"></i>
+                <input type="text" placeholder="Rechercher un patient…" oninput="filterPatients(this.value)">
+              </div>
+            </div>
+            <div id="adminPatientsTable">
               <div style="overflow-x:auto;">
                 <table class="data-table" style="width:100%;">
                   <thead>
                     <tr>
                       <th>Patient</th>
-                      <th>Service</th>
-                      <th>Date</th>
+                      <th>Contact</th>
+                      <th>Blood Type</th>
+                      <th>Insurance</th>
+                      <th>Visits</th>
+                      <th>Last Visit</th>
                       <th>Status</th>
                     </tr>
                   </thead>
-                  <tbody id="adminRecentAppointmentsTable">
+                  <tbody id="adminPatientTable">
                     <tr>
-                      <td colspan="4" style="text-align:center;padding:20px;color:var(--muted);">
-                        <i class="fas fa-spinner fa-spin" style="margin-right:8px;"></i> Loading appointments...
+                      <td colspan="7" style="text-align:center;padding:20px;color:var(--muted);">
+                        <i class="fas fa-spinner fa-spin" style="margin-right:8px;"></i> Loading patients...
                       </td>
                     </tr>
                   </tbody>
@@ -1001,302 +1083,214 @@
               </div>
             </div>
           </div>
+        </div><!-- /atab-patients -->
 
-          <!-- Fil d'activité -->
-          <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden;display:flex;flex-direction:column;">
-            <div class="table-toolbar"><span class="table-title">Activity Feed</span></div>
-            <div style="padding:0 16px;" id="adminActivityFeed">
-              <div style="padding:20px;text-align:center;color:var(--muted);">
-                <i class="fas fa-spinner fa-spin" style="margin-right:8px;"></i> Loading activities...
-              </div>
-            </div>
+        <!-- Onglet — Messagerie Admin -->
+        <div class="dash-tab" id="atab-chat">
+          <div class="dash-page-title">Messagerie Support</div>
+          <div class="dash-page-sub">
+            Gérez les demandes des patients en temps réel
           </div>
+          <div class="admin-chat-layout" id="adminChatLayout"></div>
         </div>
-      </div><!-- /atab-overview -->
 
-      <!-- Onglet — Gestion des RDV -->
-      <div class="dash-tab" id="atab-appointments">
-        <div class="dash-page-title">Gestion des Rendez-vous</div>
-        <div class="dash-page-sub">
-          Consultez, confirmez ou reprogrammez les rendez-vous des patients
-        </div>
-        <div class="data-table-wrap">
-          <div class="table-toolbar">
-            <span class="table-title">Tous les Rendez-vous</span>
-            <div class="flex gap-2">
-              <div class="table-search">
-                <i class="fas fa-search"></i>
-                <input type="text" placeholder="Rechercher…"
-                       oninput="filterAdminApts(this.value)">
-              </div>
-              <select class="status-select"
-                      onchange="filterAdminAptsByStatus(this.value)">
-                <option value="">Tous les statuts</option>
-                <option value="pending">En attente</option>
-                <option value="confirmed">Confirmé</option>
-                <option value="completed">Terminé</option>
-                <option value="cancelled">Annulé</option>
-              </select>
-            </div>
+        <!-- Onglet — Paramètres Admin -->
+        <div class="dash-tab" id="atab-settings">
+          <div class="dash-page-title">Paramètres de la Clinique</div>
+          <div class="dash-page-sub">
+            Configurez les informations, les horaires et les préférences système
           </div>
-          <div id="adminAptsTable"></div>
+          <div id="settingsContent"></div>
         </div>
-      </div><!-- /atab-appointments -->
 
-      <!-- Onglet — Gestion Patients -->
-      <div class="dash-tab" id="atab-patients">
-        <div class="dash-page-title">Gestion des Patients</div>
-        <div class="dash-page-sub">
-          Consultez et gérez les profils des patients enregistrés
-        </div>
-        <div class="data-table-wrap">
-          <div class="table-toolbar">
-            <span class="table-title">Tous les Patients</span>
-            <div class="table-search">
-              <i class="fas fa-search"></i>
-              <input type="text" placeholder="Rechercher un patient…"
-                     oninput="filterPatients(this.value)">
-            </div>
-          </div>
-          <div id="adminPatientsTable">
-            <div style="overflow-x:auto;">
-              <table class="data-table" style="width:100%;">
-                <thead>
-                  <tr>
-                    <th>Patient</th>
-                    <th>Contact</th>
-                    <th>Blood Type</th>
-                    <th>Insurance</th>
-                    <th>Visits</th>
-                    <th>Last Visit</th>
-                    <th>Status</th>
-                  </tr>
-                </thead>
-                <tbody id="adminPatientTable">
-                  <tr>
-                    <td colspan="7" style="text-align:center;padding:20px;color:var(--muted);">
-                      <i class="fas fa-spinner fa-spin" style="margin-right:8px;"></i> Loading patients...
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      </div><!-- /atab-patients -->
+      </main>
+    </div>
+  </div><!-- /page-admin -->
 
-      <!-- Onglet — Messagerie Admin -->
-      <div class="dash-tab" id="atab-chat">
-        <div class="dash-page-title">Messagerie Support</div>
-        <div class="dash-page-sub">
-          Gérez les demandes des patients en temps réel
-        </div>
-        <div class="admin-chat-layout" id="adminChatLayout"></div>
-      </div>
-
-      <!-- Onglet — Paramètres Admin -->
-      <div class="dash-tab" id="atab-settings">
-        <div class="dash-page-title">Paramètres de la Clinique</div>
-        <div class="dash-page-sub">
-          Configurez les informations, les horaires et les préférences système
-        </div>
-        <div id="settingsContent"></div>
-      </div>
-
-    </main>
-  </div>
-</div><!-- /page-admin -->
-
-<!-- ═══════════════════════════════════════════════════
+  <!-- ═══════════════════════════════════════════════════
      PAGE — CONTACT
 ════════════════════════════════════════════════════ -->
-<div class="page" id="page-contact">
-  <div class="contact-page">
-    <div class="contact-inner">
-      <div class="contact-hero anim-fadeUp">
-        <div class="section-tag">Contactez-nous</div>
-        <h2 class="section-title">Nous Sommes <em>Là pour Vous</em></h2>
-        <p class="section-desc">
-          Une question ou besoin de prendre rendez-vous ? Contactez-nous
-          et notre équipe vous répondra rapidement.
-        </p>
+  <div class="page" id="page-contact">
+    <div class="contact-page">
+      <div class="contact-inner">
+        <div class="contact-hero anim-fadeUp">
+          <div class="section-tag">Contactez-nous</div>
+          <h2 class="section-title">Nous Sommes <em>Là pour Vous</em></h2>
+          <p class="section-desc">
+            Une question ou besoin de prendre rendez-vous ? Contactez-nous
+            et notre équipe vous répondra rapidement.
+          </p>
+        </div>
+
+        <div class="contact-grid">
+          <!-- Informations de contact -->
+          <div>
+            <div class="contact-info anim-slideRight">
+              <h3>Informations de Contact</h3>
+              <p>Nos coordinateurs de soins sont disponibles du lundi au samedi.
+                Pour les urgences, appelez-nous directement.</p>
+
+              <div class="contact-item">
+                <div class="contact-item-icon"><i class="fas fa-map-marker-alt"></i></div>
+                <div>
+                  <div class="contact-item-label">Adresse</div>
+                  <div class="contact-item-val">
+                    Avenue 2, <br>75014 Tetouan
+                  </div>
+                </div>
+              </div>
+              <div class="contact-item">
+                <div class="contact-item-icon"><i class="fas fa-phone-alt"></i></div>
+                <div>
+                  <div class="contact-item-label">Téléphone</div>
+                  <div class="contact-item-val">+212 688 003 790</div>
+                </div>
+              </div>
+              <div class="contact-item">
+                <div class="contact-item-icon"><i class="fas fa-envelope"></i></div>
+                <div>
+                  <div class="contact-item-label">E-mail</div>
+                  <div class="contact-item-val">soins@optimed.fr</div>
+                </div>
+              </div>
+
+              <div class="hours-grid">
+                <div class="hours-row">
+                  <span class="hours-day">Lundi – Vendredi</span>
+                  <span class="hours-time">8h00 – 18h00</span>
+                </div>
+                <div class="hours-row">
+                  <span class="hours-day">Samedi</span>
+                  <span class="hours-time">9h00 – 14h00</span>
+                </div>
+                <div class="hours-row">
+                  <span class="hours-day">Dimanche</span>
+                  <span class="hours-time">Fermé</span>
+                </div>
+              </div>
+
+              <a href="https://wa.me/+212688003790" target="_blank" class="wa-btn">
+                <i class="fab fa-whatsapp" style="font-size:20px;"></i>
+                Discuter sur WhatsApp
+              </a>
+            </div>
+          </div>
+
+          <!-- Formulaire de contact -->
+          <div>
+            <div class="contact-form-card anim-slideLeft">
+              <h3>Envoyer un Message</h3>
+              <p>Remplissez le formulaire et nous vous répondrons sous 24 heures.</p>
+
+              <!-- id="contactForm" — CONSERVÉ -->
+              <form id="contactForm" onsubmit="handleContactSubmit(event)">
+                <div class="form-row">
+                  <div class="form-group">
+                    <label class="form-label">Prénom</label>
+                    <input type="text" class="form-control" id="ctFirst" placeholder="Mohamed" required>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Nom</label>
+                    <input type="text" class="form-control" id="ctLast" placeholder="Albtiui" required>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">E-mail</label>
+                  <div class="input-icon-wrap">
+                    <i class="fas fa-envelope"></i>
+                    <input type="email" class="form-control" id="ctEmail" placeholder="Mohamed@exemple.fr" required>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Téléphone (Optionnel)</label>
+                  <div class="input-icon-wrap">
+                    <i class="fas fa-phone"></i>
+                    <input type="tel" class="form-control" id="ctPhone" placeholder="+212 600 000 000">
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Sujet</label>
+                  <select class="form-control" id="ctSubject" required>
+                    <option value="">-- Sélectionner un sujet --</option>
+                    <option>Renseignements généraux</option>
+                    <option>Prendre rendez-vous</option>
+                    <option>Questions d'assurance</option>
+                    <option>Dossier médical</option>
+                    <option>Urgence médicale</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Message</label>
+                  <textarea class="form-control" id="ctMessage" rows="4" placeholder="Comment pouvons-nous vous aider ?"
+                    required style="resize:vertical;"></textarea>
+                </div>
+                <!-- id="ctBtn" / id="ctBtnText" — CONSERVÉS -->
+                <button type="submit" class="btn-submit" id="ctBtn">
+                  <span id="ctBtnText">
+                    <i class="fas fa-paper-plane"></i> Envoyer le message
+                  </span>
+                </button>
+              </form>
+            </div>
+          </div>
+        </div><!-- /contact-grid -->
       </div>
-
-      <div class="contact-grid">
-        <!-- Informations de contact -->
-        <div>
-          <div class="contact-info anim-slideRight">
-            <h3>Informations de Contact</h3>
-            <p>Nos coordinateurs de soins sont disponibles du lundi au samedi.
-               Pour les urgences, appelez-nous directement.</p>
-
-            <div class="contact-item">
-              <div class="contact-item-icon"><i class="fas fa-map-marker-alt"></i></div>
-              <div>
-                <div class="contact-item-label">Adresse</div>
-                <div class="contact-item-val">
-                  Avenue 2, <br>75014 Tetouan
-                </div>
-              </div>
-            </div>
-            <div class="contact-item">
-              <div class="contact-item-icon"><i class="fas fa-phone-alt"></i></div>
-              <div>
-                <div class="contact-item-label">Téléphone</div>
-                <div class="contact-item-val">+212 688 003 790</div>
-              </div>
-            </div>
-            <div class="contact-item">
-              <div class="contact-item-icon"><i class="fas fa-envelope"></i></div>
-              <div>
-                <div class="contact-item-label">E-mail</div>
-                <div class="contact-item-val">soins@optimed.fr</div>
-              </div>
-            </div>
-
-            <div class="hours-grid">
-              <div class="hours-row">
-                <span class="hours-day">Lundi – Vendredi</span>
-                <span class="hours-time">8h00 – 18h00</span>
-              </div>
-              <div class="hours-row">
-                <span class="hours-day">Samedi</span>
-                <span class="hours-time">9h00 – 14h00</span>
-              </div>
-              <div class="hours-row">
-                <span class="hours-day">Dimanche</span>
-                <span class="hours-time">Fermé</span>
-              </div>
-            </div>
-
-            <a href="https://wa.me/+212688003790" target="_blank" class="wa-btn">
-              <i class="fab fa-whatsapp" style="font-size:20px;"></i>
-              Discuter sur WhatsApp
-            </a>
-          </div>
-        </div>
-
-        <!-- Formulaire de contact -->
-        <div>
-          <div class="contact-form-card anim-slideLeft">
-            <h3>Envoyer un Message</h3>
-            <p>Remplissez le formulaire et nous vous répondrons sous 24 heures.</p>
-
-            <!-- id="contactForm" — CONSERVÉ -->
-            <form id="contactForm" onsubmit="handleContactSubmit(event)">
-              <div class="form-row">
-                <div class="form-group">
-                  <label class="form-label">Prénom</label>
-                  <input type="text" class="form-control" id="ctFirst"
-                         placeholder="Mohamed" required>
-                </div>
-                <div class="form-group">
-                  <label class="form-label">Nom</label>
-                  <input type="text" class="form-control" id="ctLast"
-                         placeholder="Albtiui" required>
-                </div>
-              </div>
-              <div class="form-group">
-                <label class="form-label">E-mail</label>
-                <div class="input-icon-wrap">
-                  <i class="fas fa-envelope"></i>
-                  <input type="email" class="form-control" id="ctEmail"
-                         placeholder="Mohamed@exemple.fr" required>
-                </div>
-              </div>
-              <div class="form-group">
-                <label class="form-label">Téléphone (Optionnel)</label>
-                <div class="input-icon-wrap">
-                  <i class="fas fa-phone"></i>
-                  <input type="tel" class="form-control" id="ctPhone"
-                         placeholder="+212 600 000 000">
-                </div>
-              </div>
-              <div class="form-group">
-                <label class="form-label">Sujet</label>
-                <select class="form-control" id="ctSubject" required>
-                  <option value="">-- Sélectionner un sujet --</option>
-                  <option>Renseignements généraux</option>
-                  <option>Prendre rendez-vous</option>
-                  <option>Questions d'assurance</option>
-                  <option>Dossier médical</option>
-                  <option>Urgence médicale</option>
-                </select>
-              </div>
-              <div class="form-group">
-                <label class="form-label">Message</label>
-                <textarea class="form-control" id="ctMessage" rows="4"
-                          placeholder="Comment pouvons-nous vous aider ?"
-                          required style="resize:vertical;"></textarea>
-              </div>
-              <!-- id="ctBtn" / id="ctBtnText" — CONSERVÉS -->
-              <button type="submit" class="btn-submit" id="ctBtn">
-                <span id="ctBtnText">
-                  <i class="fas fa-paper-plane"></i> Envoyer le message
-                </span>
-              </button>
-            </form>
-          </div>
-        </div>
-      </div><!-- /contact-grid -->
     </div>
-  </div>
-</div><!-- /page-contact -->
+  </div><!-- /page-contact -->
 
-<!-- ═══════════════════════════════════════════════════
+  <!-- ═══════════════════════════════════════════════════
      WIDGET CHAT (flottant)
 ════════════════════════════════════════════════════ -->
-<div class="chat-widget-fab" onclick="openChat()" id="chatFab">
-  <i class="fas fa-comment-dots"></i>
-  <div class="chat-widget-unread" id="chatUnread" style="display:none;">1</div>
-</div>
+  <div class="chat-widget-fab" onclick="openChat()" id="chatFab">
+    <i class="fas fa-comment-dots"></i>
+    <div class="chat-widget-unread" id="chatUnread" style="display:none;">1</div>
+  </div>
 
-<div class="chat-widget-box" id="chatBox">
-  <div class="chat-widget-header">
-    <div class="chat-widget-avatar">💬</div>
-    <div>
-      <div class="chat-widget-name">Support OptiMed</div>
-      <div class="chat-widget-status">
-        En ligne — Répond généralement en quelques minutes
+  <div class="chat-widget-box" id="chatBox">
+    <div class="chat-widget-header">
+      <div class="chat-widget-avatar">💬</div>
+      <div>
+        <div class="chat-widget-name">Support OptiMed</div>
+        <div class="chat-widget-status">
+          En ligne — Répond généralement en quelques minutes
+        </div>
       </div>
+      <span class="chat-close" onclick="closeChat()">
+        <i class="fas fa-times"></i>
+      </span>
     </div>
-    <span class="chat-close" onclick="closeChat()">
-      <i class="fas fa-times"></i>
-    </span>
+    <div class="chat-quick-replies" id="chatQuickReplies">
+      <div class="qr-chip" onclick="sendQuickReply('📅 Prendre RDV')">📅 Prendre RDV</div>
+      <div class="qr-chip" onclick="sendQuickReply('🕐 Horaires')">🕐 Horaires</div>
+      <div class="qr-chip" onclick="sendQuickReply('💳 Assurance')">💳 Assurance</div>
+      <div class="qr-chip" onclick="sendQuickReply('🩺 Services')">🩺 Services</div>
+      <div class="qr-chip" onclick="sendQuickReply('📋 Dossier médical')">📋 Dossier</div>
+    </div>
+    <div class="chat-messages" id="chatMessages"></div>
+    <div class="chat-input-wrap">
+      <textarea class="chat-text-input" id="chatInput" placeholder="Écrivez votre message…" rows="1"
+        onkeydown="chatKeyDown(event)" oninput="autoResizeChatInput(this)"></textarea>
+      <button class="chat-send-btn" onclick="sendChatMsg()" id="chatSendBtn">
+        <i class="fas fa-paper-plane"></i>
+      </button>
+    </div>
   </div>
-  <div class="chat-quick-replies" id="chatQuickReplies">
-    <div class="qr-chip" onclick="sendQuickReply('📅 Prendre RDV')">📅 Prendre RDV</div>
-    <div class="qr-chip" onclick="sendQuickReply('🕐 Horaires')">🕐 Horaires</div>
-    <div class="qr-chip" onclick="sendQuickReply('💳 Assurance')">💳 Assurance</div>
-    <div class="qr-chip" onclick="sendQuickReply('🩺 Services')">🩺 Services</div>
-    <div class="qr-chip" onclick="sendQuickReply('📋 Dossier médical')">📋 Dossier</div>
-  </div>
-  <div class="chat-messages" id="chatMessages"></div>
-  <div class="chat-input-wrap">
-    <textarea class="chat-text-input" id="chatInput"
-              placeholder="Écrivez votre message…" rows="1"
-              onkeydown="chatKeyDown(event)"
-              oninput="autoResizeChatInput(this)"></textarea>
-    <button class="chat-send-btn" onclick="sendChatMsg()" id="chatSendBtn">
-      <i class="fas fa-paper-plane"></i>
-    </button>
-  </div>
-</div>
 
-<!-- ═══════════════════════════════════════════════════
+  <!-- ═══════════════════════════════════════════════════
      NOTIFICATIONS TOAST
 ════════════════════════════════════════════════════ -->
-<div class="toast-container" id="toastContainer"></div>
+  <div class="toast-container" id="toastContainer"></div>
 
-<!-- ═══════════════════════════════════════════════════
+  <!-- ═══════════════════════════════════════════════════
      OVERLAY DE CHARGEMENT
 ════════════════════════════════════════════════════ -->
-<div class="loading-overlay" id="loadingOverlay" style="display:none;">
-  <div class="loading-spinner"></div>
-  <div class="loading-text" id="loadingText">Chargement…</div>
-</div>
+  <div class="loading-overlay" id="loadingOverlay" style="display:none;">
+    <div class="loading-spinner"></div>
+    <div class="loading-text" id="loadingText">Chargement…</div>
+  </div>
 
-<!-- Script principal -->
-<script src="./JS/script.js"></script>
+  <!-- Script principal -->
+  <script src="./JS/script.js"></script>
 </body>
-</html> 
+
+</html>

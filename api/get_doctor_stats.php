@@ -1,107 +1,101 @@
 <?php
-// api/get_doctor_stats.php
+/**
+ * api/get_doctor_stats.php
+ *
+ * Retourne pour le médecin connecté :
+ *   stats      : { total_today, pending, completed, next_apt }
+ *   today_list : tableau des RDV d'aujourd'hui triés par heure
+ */
+
 session_start();
 header('Content-Type: application/json');
-
 require 'db_connect.php';
 
-// Auth guard — doctor only
-if (empty($_SESSION['ncUser']) || $_SESSION['ncUser']['role'] !== 'doctor') {
+/* ── Auth ── */
+if (empty($_SESSION['ncUser'])) {
+    http_response_code(401);
+    echo json_encode(['success' => false, 'message' => 'Non authentifié.']);
+    exit;
+}
+
+$user = $_SESSION['ncUser'];
+if ($user['role'] !== 'doctor') {
     http_response_code(403);
-    echo json_encode(['success' => false, 'message' => 'Doctor access required.']);
+    echo json_encode(['success' => false, 'message' => 'Accès réservé aux médecins.']);
     exit;
 }
 
-$userId = (int)$_SESSION['ncUser']['id'];
+$userId = (int) $user['id'];
+$today  = date('Y-m-d');
 
-// Resolve doctor profile id from user id
-$stmtDoc = $conn->prepare("SELECT id, department_id FROM doctors WHERE user_id = ? LIMIT 1");
-$stmtDoc->bind_param('i', $userId);
-$stmtDoc->execute();
-$doctor = $stmtDoc->get_result()->fetch_assoc();
-$stmtDoc->close();
+/* ── ID interne du médecin ── */
+$stmt = $conn->prepare("SELECT id FROM doctors WHERE user_id = ? LIMIT 1");
+$stmt->bind_param('i', $userId);
+$stmt->execute();
+$row = $stmt->get_result()->fetch_assoc();
+$stmt->close();
 
-if (!$doctor) {
-    http_response_code(404);
-    echo json_encode(['success' => false, 'message' => 'Doctor profile not found.']);
+if (!$row) {
+    echo json_encode([
+        'success'    => true,
+        'stats'      => ['total_today' => 0, 'pending' => 0, 'completed' => 0, 'next_apt' => null],
+        'today_list' => [],
+    ]);
+    $conn->close();
     exit;
 }
 
-$doctorId = (int)$doctor['id'];
-$today    = date('Y-m-d');
+$doctorId = (int) $row['id'];
 
-// ── Stat 1: Today's total consultations ──────────────────────────────────────
-$stmtTotal = $conn->prepare(
-    "SELECT COUNT(*) AS cnt FROM appointments
-     WHERE doctor_id = ? AND appointment_date = ?
-       AND status NOT IN ('cancelled')"
-);
-$stmtTotal->bind_param('is', $doctorId, $today);
-$stmtTotal->execute();
-$totalToday = (int)$stmtTotal->get_result()->fetch_assoc()['cnt'];
-$stmtTotal->close();
-
-// ── Stat 2: Pending (waiting room) ───────────────────────────────────────────
-$stmtPending = $conn->prepare(
-    "SELECT COUNT(*) AS cnt FROM appointments
-     WHERE doctor_id = ? AND appointment_date = ? AND status = 'pending'"
-);
-$stmtPending->bind_param('is', $doctorId, $today);
-$stmtPending->execute();
-$pending = (int)$stmtPending->get_result()->fetch_assoc()['cnt'];
-$stmtPending->close();
-
-// ── Stat 3: Completed today ───────────────────────────────────────────────────
-$stmtDone = $conn->prepare(
-    "SELECT COUNT(*) AS cnt FROM appointments
-     WHERE doctor_id = ? AND appointment_date = ? AND status = 'completed'"
-);
-$stmtDone->bind_param('is', $doctorId, $today);
-$stmtDone->execute();
-$completed = (int)$stmtDone->get_result()->fetch_assoc()['cnt'];
-$stmtDone->close();
-
-// ── Stat 4: Upcoming appointments (today, not yet done/cancelled) ─────────────
-// Also fetch the next appointment time for display
-$stmtNext = $conn->prepare(
-    "SELECT a.appointment_time,
-            CONCAT(p.first_name, ' ', p.last_name) AS patient_name
+/* ── RDV du jour ── */
+$stmt = $conn->prepare(
+    "SELECT
+         a.id,
+         TIME_FORMAT(a.appointment_time, '%H:%i')           AS time,
+         COALESCE(NULLIF(a.status, ''), 'pending')          AS status,
+         COALESCE(a.reason, 'Consultation générale')        AS reason,
+         CONCAT(pt.first_name, ' ', pt.last_name)           AS patient_name
      FROM appointments a
-     JOIN patients p ON p.id = a.patient_id
-     WHERE a.doctor_id = ? AND a.appointment_date = ?
-       AND a.status IN ('pending', 'confirmed')
-     ORDER BY a.appointment_time ASC
-     LIMIT 1"
-);
-$stmtNext->bind_param('is', $doctorId, $today);
-$stmtNext->execute();
-$nextApt = $stmtNext->get_result()->fetch_assoc();
-$stmtNext->close();
-
-// ── Today's full appointment list (for the mini-table) ───────────────────────
-$stmtList = $conn->prepare(
-    "SELECT a.id, a.appointment_time AS time, a.status, a.reason,
-            CONCAT(p.first_name, ' ', p.last_name) AS patient_name
-     FROM appointments a
-     JOIN patients p ON p.id = a.patient_id
-     WHERE a.doctor_id = ? AND a.appointment_date = ?
-       AND a.status NOT IN ('cancelled')
+     JOIN patients pt ON pt.id = a.patient_id
+     WHERE a.doctor_id = ?
+       AND a.appointment_date = ?
      ORDER BY a.appointment_time ASC"
 );
-$stmtList->bind_param('is', $doctorId, $today);
-$stmtList->execute();
-$todayList = $stmtList->get_result()->fetch_all(MYSQLI_ASSOC);
-$stmtList->close();
+$stmt->bind_param('is', $doctorId, $today);
+$stmt->execute();
+$todayRows = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+$stmt->close();
+
+/* ── Calcul des stats ── */
+$total_today = count($todayRows);
+$pending = $completed = 0;
+
+foreach ($todayRows as $r) {
+    if ($r['status'] === 'completed')                      $completed++;
+    if (in_array($r['status'], ['pending', 'confirmed']))  $pending++;
+}
+
+/* ── Prochain RDV ── */
+$next_apt = null;
+foreach ($todayRows as $r) {
+    if (in_array($r['status'], ['pending', 'confirmed'])) {
+        $next_apt = [
+            'appointment_time' => $r['time'],
+            'patient_name'     => $r['patient_name'],
+        ];
+        break;
+    }
+}
 
 $conn->close();
 
 echo json_encode([
-    'success'    => true,
-    'stats' => [
-        'total_today' => $totalToday,
+    'success' => true,
+    'stats'   => [
+        'total_today' => $total_today,
         'pending'     => $pending,
         'completed'   => $completed,
-        'next_apt'    => $nextApt ?: null,   // null if no more appointments today
+        'next_apt'    => $next_apt,
     ],
-    'today_list' => $todayList,
+    'today_list' => $todayRows,
 ]);

@@ -1,70 +1,55 @@
 <?php
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
+/**
+ * api/get_all_appointments.php
+ *
+ * Retourne TOUS les rendez-vous de la clinique pour l'administrateur.
+ *
+ * Clés retournées (correspondent exactement à renderAdminAptsTable dans script.js) :
+ *   id, patient, email, doctor, service, date, time, status, notes
+ */
 
+session_start();
 header('Content-Type: application/json');
-require_once 'db_connect.php';
 
-try {
-    $appointments = [];
+require 'db_connect.php';
 
-    // Récupération de tous les rendez-vous, du plus récent au plus ancien
-    $query = "SELECT id, reason, appointment_date, appointment_time, status, patient_id, doctor_id FROM appointments ORDER BY id DESC";
-    $result = $conn->query($query);
-    
-    if (!$result) throw new Exception("Erreur base de données : " . $conn->error);
-
-    while ($row = $result->fetch_assoc()) {
-        $pId = (int)$row['patient_id'];
-        $patientName = "Patient #" . $pId;
-        $patientEmail = "Non renseigné";
-        
-        // 1. Récupération dynamique des infos du patient
-        if ($pId > 0) {
-            $uRes = $conn->query("SELECT * FROM users WHERE id = $pId");
-            if ($uRes && $uRow = $uRes->fetch_assoc()) {
-                if (isset($uRow['username'])) {
-                    $patientName = $uRow['username'];
-                }
-                if (isset($uRow['email'])) {
-                    $patientEmail = $uRow['email'];
-                    if (!isset($uRow['username'])) {
-                        $patientName = explode('@', $uRow['email'])[0];
-                    }
-                }
-            }
-        }
-
-        // 2. Attribution d'un médecin fictif ou réel pour l'affichage (colonne doctor_id)
-        $doctorName = "Dr. Sarah Mohamed"; 
-        if ((int)$row['doctor_id'] % 2 === 0) {
-            $doctorName = "Dr. Emily Chen";
-        }
-
-        // Status par défaut si vide
-        $status = !empty($row['status']) ? $row['status'] : 'pending';
-
-        $appointments[] = [
-            "id" => "APT" . str_pad($row['id'], 3, '0', STR_PAD_LEFT), // Formate l'ID en APT019, APT020...
-            "patient_name" => $patientName,
-            "patient_email" => $patientEmail,
-            "doctor" => $doctorName,
-            "service" => !empty($row['reason']) ? $row['reason'] : 'Consultation',
-            "date_time" => $row['appointment_date'] . " à " . (!empty($row['appointment_time']) ? $row['appointment_time'] : "00:00"),
-            "status" => $status
-        ];
-    }
-
-    echo json_encode([
-        "success" => true,
-        "appointments" => $appointments
-    ]);
-
-} catch (Exception $e) {
-    echo json_encode([
-        "success" => false,
-        "message" => $e->getMessage(),
-        "appointments" => []
-    ]);
+/* ── Auth : admin uniquement ── */
+if (empty($_SESSION['ncUser'])) {
+    http_response_code(401);
+    echo json_encode(['success' => false, 'message' => 'Non authentifié.']);
+    exit;
 }
+
+if ($_SESSION['ncUser']['role'] !== 'admin') {
+    http_response_code(403);
+    echo json_encode(['success' => false, 'message' => 'Accès réservé aux administrateurs.']);
+    exit;
+}
+
+/* ── Requête ── */
+$result = $conn->query(
+    "SELECT
+         a.id,
+         CONCAT(pt.first_name, ' ', pt.last_name)          AS patient,
+         u.email,
+         CONCAT(d.first_name,  ' ', d.last_name)           AS doctor,
+         COALESCE(dept.name, 'Consultation')                AS service,
+         a.appointment_date                                 AS date,
+         TIME_FORMAT(a.appointment_time, '%H:%i')           AS time,
+         COALESCE(NULLIF(a.status, ''), 'pending')          AS status,
+         COALESCE(a.reason, 'Consultation générale')        AS notes
+     FROM appointments a
+     JOIN patients    pt   ON pt.id   = a.patient_id
+     JOIN users       u    ON u.id    = pt.user_id
+     JOIN doctors     d    ON d.id    = a.doctor_id
+     LEFT JOIN departments dept ON dept.id = d.department_id
+     ORDER BY a.appointment_date DESC, a.appointment_time DESC"
+);
+
+$appointments = $result->fetch_all(MYSQLI_ASSOC);
+$conn->close();
+
+echo json_encode([
+    'success'      => true,
+    'appointments' => $appointments,
+]);
