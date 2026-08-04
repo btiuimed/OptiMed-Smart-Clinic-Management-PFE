@@ -55,46 +55,7 @@ function generateTableRowsHTML(appointmentsArray) {
   }).join('');
 }
 
-// 🏁 L'UNIQUE FONCTION DE CHARGEMENT SÉCURISÉE
-async function unifiedAppointmentsLoader() {
-  try {
-    const res = await fetch('api/get_all_appointments.php');
-    const data = await res.json();
-
-    if (data.success && data.appointments) {
-      MockDB.appointments = data.appointments.map(apt => {
-        let numericId = apt.id.replace('APT', '');
-        return {
-          id: apt.id,
-          patientId: parseInt(numericId) || 1,
-          patient: apt.patient_name,
-          email: apt.patient_email,
-          doctor: apt.doctor,
-          service: apt.service,
-          date: apt.date_time.split(' à ')[0],
-          time: apt.date_time.split(' à ')[1] || '00:00',
-          status: apt.status.toLowerCase() === 'confirmé' ? 'confirmed' :
-            (apt.status.toLowerCase() === 'terminé' ? 'completed' : 'pending'),
-          notes: 'MySQL Live Data'
-        };
-      });
-      console.log("🔥 [OptiMed] Base de données synchronisée ! Total :", MockDB.appointments.length);
-
-      // Force l'exécution immédiate des moteurs de rendu natifs s'ils existent
-      if (typeof init === 'function') init();
-      if (typeof updateUI === 'function') updateUI();
-      if (typeof render === 'function') render();
-      if (typeof renderAppointments === 'function') renderAppointments();
-    }
-  } catch (err) {
-    console.error("❌ Erreur lors de la synchronisation unifiée :", err);
-  }
-}
-
-// Lancement immédiat au chargement du script
-unifiedAppointmentsLoader();
-
-// 🎯 INTERCEPTEUR GRAPH_IQUE PAR BALAYAGE GLOBAL DE CIBLE
+// INTERCEPTEUR GRAPH_IQUE PAR BALAYAGE GLOBAL DE CIBLE
 document.addEventListener('click', function (e) {
   const isRdvClick = e.target.closest('.view-all-btn') ||
     (e.target.textContent && e.target.textContent.includes('Voir tout')) ||
@@ -121,168 +82,6 @@ document.addEventListener('click', function (e) {
       }
     }, 120);
   }
-});
-
-// ══════════════════════════════════════════════════════════════════
-// ⚡ INJECTION APPLIQUÉE IMMÉDIATEMENT AVANT LE COEUR DU SCRIPT
-// ══════════════════════════════════════════════════════════════════
-async function bootloadMySQLData() {
-  try {
-    // Mettre le bon chemin relatif vers l'API à partir de l'emplacement de script.js
-    const res = await fetch('api/get_all_appointments.php');
-    const data = await res.json();
-
-    if (data.success && data.appointments) {
-      // Remplissage structurel de MockDB.appointments avec vos 5 lignes MySQL
-      MockDB.appointments = data.appointments.map(apt => {
-        let numericId = apt.id.replace('APT', '');
-        return {
-          id: apt.id,
-          patientId: parseInt(numericId),
-          patient: apt.patient_name,
-          email: apt.patient_email,
-          doctor: apt.doctor,
-          service: apt.service,
-          date: apt.date_time.split(' à ')[0],
-          time: apt.date_time.split(' à ')[1] || '00:00',
-          status: apt.status.toLowerCase() === 'confirmé' ? 'confirmed' :
-            (apt.status.toLowerCase() === 'terminé' ? 'completed' : 'pending'),
-          notes: 'Synchronisé depuis MySQL'
-        };
-      });
-
-      console.log("MySQL synchronisé avec succès dans l'infrastructure applicative.");
-
-      // Si le script d'initialisation du template s'appelle init() ou render(), on le relance
-      if (typeof init === 'function') init();
-      if (typeof renderDashboard === 'function') renderDashboard();
-      if (typeof renderAppointments === 'function') renderAppointments();
-    }
-  } catch (err) {
-    console.error("Échec du chargement à la racine :", err);
-  }
-}
-
-// Exécution immédiate globale
-bootloadMySQLData();
-
-// =================================================================
-// SYNCHRONISATION COMMANDE RADICALE : SQL -> MOCKDB (AU CHARGEMENT)
-// =================================================================
-(async function syncDatabaseWithMockDB() {
-  try {
-    const res = await fetch('api/get_all_appointments.php');
-    const data = await res.json();
-
-    if (data.success && data.appointments && data.appointments.length > 0) {
-      // On remplace le tableau statique par vos données réelles
-      MockDB.appointments = data.appointments.map(apt => {
-        let numericId = apt.id.replace('APT', '');
-        return {
-          id: apt.id,
-          patientId: numericId,
-          patient: apt.patient_name,
-          email: apt.patient_email,
-          doctor: apt.doctor,
-          service: apt.service,
-          date: apt.date_time.split(' à ')[0],
-          time: apt.date_time.split(' à ')[1] || '00:00',
-          status: apt.status.toLowerCase() === 'confirmé' ? 'confirmed' :
-            (apt.status.toLowerCase() === 'terminé' ? 'completed' : 'pending'),
-          notes: ''
-        };
-      });
-      console.log("🔥 Synchronisation MockDB réussie ! Total : " + MockDB.appointments.length);
-    }
-  } catch (err) {
-    console.error("Erreur de synchronisation automatique :", err);
-  }
-})();
-
-/* ══════════════════════════════════════════════════════════════════ */
-/* CHARGEMENT DYNAMIQUE DE TOUS LES RENDEZ-VOUS (BASE DE DONNÉES)   */
-/* ══════════════════════════════════════════════════════════════════ */
-
-async function loadAllAppointmentsTable() {
-  try {
-    // 1. On récupère les vrais rendez-vous depuis l'API PHP
-    const res = await fetch('api/get_all_appointments.php');
-    const data = await res.json();
-
-    if (data.success && data.appointments && data.appointments.length > 0) {
-
-      // ════════════════════════════════════════════════════════════
-      // 🎯 LE TRUC EN PLUS : On vide et on remplit MockDB avec le SQL !
-      // ════════════════════════════════════════════════════════════
-      MockDB.appointments = data.appointments.map(apt => {
-        // Conversion du format API vers le format attendu par le reste du script JS
-        let numericId = apt.id.replace('APT', '');
-        return {
-          id: apt.id,
-          patientId: numericId,
-          patient: apt.patient_name,
-          email: apt.patient_email,
-          doctor: apt.doctor,
-          service: apt.service,
-          // Sépare la date et l'heure si besoin
-          date: apt.date_time.split(' à ')[0],
-          time: apt.date_time.split(' à ')[1] || '00:00',
-          status: apt.status.toLowerCase() === 'confirmé' ? 'confirmed' :
-            (apt.status.toLowerCase() === 'terminé' ? 'completed' : 'pending'),
-          notes: ''
-        };
-      });
-
-      console.log("MockDB.appointments a été synchronisé avec succès avec MySQL !");
-    }
-
-    // 2. Maintenant on force l'affichage sur l'écran
-    const appointmentsTableBody = document.getElementById('allAppointmentsTableBody') || document.querySelector('.management-table tbody');
-    if (!appointmentsTableBody) return;
-
-    appointmentsTableBody.innerHTML = MockDB.appointments.map(apt => {
-      let badgeStyle = 'background:rgba(255,193,7,0.1); color:#ffc107;';
-      let label = 'Pending';
-
-      if (apt.status === 'confirmed') {
-        badgeStyle = 'background:rgba(40,167,69,0.1); color:#28a745;';
-        label = 'Confirmed';
-      } else if (apt.status === 'completed') {
-        badgeStyle = 'background:rgba(108,117,125,0.1); color:#6c757d;';
-        label = 'Completed';
-      }
-
-      return `
-                <tr>
-                    <td><strong>${apt.id}</strong></td>
-                    <td>
-                        <strong>${apt.patient}</strong><br>
-                        <small style="color:var(--muted); font-size:12px;">${apt.email}</small>
-                    </td>
-                    <td>${apt.doctor}</td>
-                    <td>${apt.service}</td>
-                    <td>${apt.date} à ${apt.time}</td>
-                    <td><span class="status-badge" style="padding:4px 8px; border-radius:12px; font-size:12px; font-weight:600; ${badgeStyle}">${label}</span></td>
-                    <td>
-                        <select class="action-select" style="padding:4px 8px; border-radius:4px; border:1px solid var(--border); font-size:13px; background:white;">
-                            <option value="pending" ${apt.status === 'pending' ? 'selected' : ''}>Pending</option>
-                            <option value="confirmed" ${apt.status === 'confirmed' ? 'selected' : ''}>Confirmed</option>
-                            <option value="completed" ${apt.status === 'completed' ? 'selected' : ''}>Completed</option>
-                        </select>
-                    </td>
-                </tr>
-            `;
-    }).join('');
-
-  } catch (err) {
-    console.error("Erreur lors de la synchronisation SQL -> MockDB :", err);
-  }
-}
-document.addEventListener('DOMContentLoaded', () => {
-  // Vos initialisations existantes...
-
-  // Déclenche l'affichage complet des rendez-vous
-  loadAllAppointmentsTable();
 });
 
 // À insérer ou modifier dans votre fichier ./JS/script.js
@@ -396,36 +195,36 @@ const DOCTORS_DATA = [
 ];
 
 const TESTIMONIALS_DATA = [
-  { name: 'Jessica M.', age: 29, text: 'Dr. Mohamed  guided me through a complicated pregnancy with extraordinary expertise and warmth. I felt completely safe and cared for throughout.', stars: 5 },
-  { name: 'Priya L.', age: 34, text: 'After two years of fertility struggles, Dr. Chen s approach completely changed my life. I am now a proud mother of twins!', stars: 5 },
-  { name: 'Sarah  K.', age: 41, text: 'The menopause management programme here has been life-changing. Finally a team that truly listens and provides real, evidence-based solutions.', stars: 5 },
-  { name: 'Rachel O.', age: 26, text: 'My very first gynecology exam and I was nervous, but the entire team made me feel completely at ease. Professional and compassionate.', stars: 5 },
-  { name: 'Aisha N.', age: 32, text: 'Exceptional prenatal care from start to finish. Dr. Mohamed  remembered every detail about my case at every single visit. Truly outstanding.', stars: 5 },
-  { name: 'Sara T.', age: 36, text: 'Professional doctors and very organized clinic. Booking was easy and the consultation exceeded my expectations.', stars: 5 },
-  { name: 'Nour A.', age: 30, text: 'I received excellent care during my visit. The doctor explained everything clearly and made me feel comfortable.', stars: 5 },
-  { name: 'Lina H.', age: 27, text: 'The staff were incredibly friendly and supportive. My ultrasound experience was smooth and reassuring from start to finish.', stars: 5 },
+  { name: 'Jessica M.', age: 29, text: "Le Dr Mohamed m'a accompagnée tout au long d'une grossesse compliquée avec une expertise et une bienveillance extraordinaires. Je me suis sentie totalement en sécurité et entourée du début à la fin.", stars: 5 },
+  { name: 'Priya L.', age: 34, text: "Après deux ans de combat contre l'infertilité, l'approche du Dr Chen a complètement changé ma vie. Je suis aujourd'hui la fière maman de jumeaux !", stars: 5 },
+  { name: 'Sarah K.', age: 41, text: "Le programme de gestion de la ménopause ici a changé ma vie. Enfin une équipe qui écoute vraiment et propose de vraies solutions basées sur des données probantes.", stars: 5 },
+  { name: 'Rachel O.', age: 26, text: "C'était mon tout premier examen gynécologique et j'étais très nerveuse, mais toute l'équipe m'a mise complètement à l'aise. Professionnels et bienveillants.", stars: 5 },
+  { name: 'Aisha N.', age: 32, text: "Un suivi prénatal exceptionnel du début à la fin. Le Dr Mohamed se souvenait de chaque détail de mon dossier à chaque consultation. Vraiment remarquable.", stars: 5 },
+  { name: 'Sara T.', age: 36, text: "Des médecins professionnels et une clinique très bien organisée. La prise de rendez-vous a été simple et la consultation a dépassé mes attentes.", stars: 5 },
+  { name: 'Nour A.', age: 30, text: "J'ai reçu des soins excellents lors de ma visite. Le médecin a tout expliqué clairement et m'a mise parfaitement à l'aise.", stars: 5 },
+  { name: 'Lina H.', age: 27, text: "Le personnel a été incroyablement amical et d'un grand soutien. Mon expérience d'échographie s'est déroulée de manière fluide et rassurante du début à la fin.", stars: 5 },
 ];
 
 const CHAT_AUTO_RESPONSES = [
-  "Thank you for reaching out! One of our care coordinators will be with you shortly. 😊",
-  "Our clinic is open Monday–Friday 8AM–6PM and Saturday 9AM–2PM. For urgent matters, please call +212 688 003 790.",
-  "We accept most major insurance plans including Blue Cross, Aetna, UnitedHealth, Cigna, and Humana. Would you like us to verify your specific plan?",
-  "You can book appointments online through our website or call us directly. Same-day slots may be available for urgent consultations!",
-  "All medical records are kept strictly confidential and fully HIPAA compliant.",
-  "To reschedule an appointment, please provide your appointment ID and preferred new date/time. We'll confirm availability within minutes.",
-  "Dr. Sarah  Mohamed , Dr. Emily Chen, and Dr. Amanda Torres are currently accepting new patients.",
-  "Prenatal visits are typically scheduled every 4 weeks until 28 weeks, every 2 weeks until 36 weeks, then weekly until delivery.",
+  "Merci de nous avoir contactés ! Un de nos coordinateurs de soins sera avec vous dans un instant. 😊",
+  "Notre clinique est ouverte du lundi au vendredi de 8h à 18h et le samedi de 9h à 14h. Pour les cas urgents, veuillez appeler le +212 688 003 790.",
+  "Nous acceptons la plupart des principales mutuelles et assurances, notamment l'AMO, WAFAA, RMA, SANLAM et MATU. Souhaitez-vous que nous vérifiions votre couverture spécifique ?",
+  "Vous pouvez prendre rendez-vous en ligne via notre site web ou nous appeler directement. Des créneaux le jour même peuvent être disponibles pour les consultations urgentes !",
+  "Tous les dossiers médicaux sont tenus strictement confidentiels et sont entièrement conformes aux réglementations de protection des données de santé.",
+  "Pour reporter un rendez-vous, veuillez nous fournir l'identifiant (ID) de votre rendez-vous ainsi que la nouvelle date et l'heure souhaitées. Nous vous confirmerons la disponibilité en quelques minutes.",
+  "Le Dr Btiui Mohamed et le Dr Said Makhloufi acceptent actuellement de nouveaux patients.",
+  "Les examens prénataux sont généralement planifiés toutes les 4 semaines jusqu'à 28 semaines, toutes les 2 semaines jusqu'à 36 semaines, puis chaque semaine jusqu'à l'accouchement.",
 ];
 
 
 /* ═════ APP STATE ════ */
 const App = {
-  // 🎯 CORRECTION : On définit par défaut un compte Admin/Médecin pour forcer l'affichage du bon tableau de bord
+  // On définit par défaut un compte Admin/Médecin pour forcer l'affichage du bon tableau de bord
   currentUser: {
     id: 2,
     email: 'admin@novacare.com',
     role: 'admin',          // Débloque le panneau d'administration
-    firstName: 'Dr. Sarah',
+    firstName: 'Dr. Albtiui',
     lastName: 'Mohamed',
     initials: 'MM'          // Correspond à vos captures d'écran
   },
@@ -433,12 +232,12 @@ const App = {
   bookingStep: 1,
   bookingData: { service: '', doctor: '', date: null, time: '', name: '', email: '', phone: '', notes: '' },
   chatOpen: false,
-  chatMessages: [{ id: 1, text: "Hello! 👋 Welcome to NovaCare. How can we help you today?", sender: 'admin', time: getNow() }],
+  chatMessages: [{ id: 1, text: "Bonjour ! Bienvenue chez OptiMed. Comment pouvons-nous vous aider aujourd'hui ?", sender: 'admin', time: getNow() }],
   chatTyping: false,
   chatUnreadCount: 1,
   adminActiveConv: 'c1',
 
-  // 🎯 CORRECTION CRITIQUE : Liaison directe dynamique avec MockDB (qui contient vos données MySQL désormais)
+  // Liaison directe dynamique avec MockDB (qui contient vos données MySQL désormais)
   get appointments() { return MockDB.appointments; },
   set appointments(val) { },
 
@@ -466,7 +265,7 @@ function getToday() { return new Date().toISOString().split('T')[0]; }
       const fullName = `${u.firstName} ${u.lastName || ''}`.trim();
       setDashboardRole(u.role, fullName);
 
-      // 🎯 NETTOYAGE CHIRURGICAL : Si l'utilisateur est un docteur ou un admin, on liquide le menu patient
+      // Si l'utilisateur est un docteur ou un admin, on liquide le menu patient
       if (u.role === 'doctor' || u.role === 'admin') {
         setTimeout(() => {
           // 1. On cherche et on masque le titre de la section "Portail Patient"
@@ -490,7 +289,7 @@ function getToday() { return new Date().toISOString().split('T')[0]; }
             }
           });
 
-          console.log("🧼 Menu patient nettoyé avec succès de l'espace praticien.");
+          console.log("Menu patient nettoyé avec succès de l'espace praticien.");
         }, 50); // Un léger délai pour laisser updateNavForUser() finir son travail
       }
     }
@@ -529,6 +328,19 @@ function goPage(name) {
   if (name === 'admin') initAdmin();
   if (name === 'contact') { }
 
+  // ── Mettre à jour l'URL sans recharger la page ──────────────────
+  const urlMap = {
+    home: '/',
+    login: '/login',
+    register: '/register',
+    booking: '/booking',
+    dashboard: '/dashboard',
+    admin: '/dashboard/admin',
+    contact: '/contact',
+  };
+  const newUrl = (window._basePath || '') + (urlMap[name] || '/' + name);
+  window.history.pushState({ page: name }, '', newUrl);
+
   window.scrollTo(0, 0);
   closeMobileMenu();
 
@@ -539,11 +351,202 @@ function goPage(name) {
     + (roleClass ? ' ' + roleClass : '');
 }
 
+// ── Boutons Précédent / Suivant du navigateur ────────────────────
+window.addEventListener('popstate', (e) => {
+  const page = e.state?.page || _pageFromUrl(window.location.pathname);
+  if (page) goPage(page);
+});
+
 window.addEventListener('scroll', () => {
   const navbar = document.getElementById('navbar');
   if (window.scrollY > 20) { navbar.classList.add('scrolled'); navbar.classList.remove('dark-nav'); }
   else { navbar.classList.remove('scrolled'); if (App.currentPage === 'home') navbar.classList.add('dark-nav'); }
 });
+
+function setLoginTab(role, el) {
+  document.getElementById('loginRole').value = role;
+  document.querySelectorAll('.role-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+
+  // Mettre à jour les classes visuelles
+  document.querySelectorAll('.login-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+}
+
+// ── Mot de passe oublié ──────────────────────────────────────────
+
+function showLoginForm() {
+  const body = document.querySelector('#page-login .auth-body');
+  if (!body) return;
+
+  body.innerHTML = `
+    <div class="demo-hint">
+      <strong>Identifiants de démonstration :</strong><br>
+      Patient : <strong>patient@optimed.fr</strong> / <strong>password</strong><br>
+      Admin : <strong>admin@optimed.fr</strong> / <strong>admin123</strong>
+    </div>
+
+    <form id="loginForm" onsubmit="handleLogin(event)">
+      <div class="form-group">
+        <label class="form-label">Adresse e-mail</label>
+        <div class="input-icon-wrap">
+          <i class="fas fa-envelope"></i>
+          <input type="email" class="form-control" id="loginEmail"
+                 placeholder="vous@exemple.fr" required>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Mot de passe</label>
+        <div class="input-icon-wrap" style="position:relative;">
+          <i class="fas fa-lock"></i>
+          <input type="password" class="form-control" id="loginPassword"
+                 placeholder="••••••••" required
+                 style="padding-left:38px;padding-right:44px;">
+          <button type="button"
+                  onclick="togglePassword('loginPassword','eyeLogin')"
+                  style="position:absolute;right:12px;top:50%;transform:translateY(-50%);
+                         color:var(--muted);font-size:14px;background:none;
+                         border:none;cursor:pointer;">
+            <i class="fas fa-eye" id="eyeLogin"></i>
+          </button>
+        </div>
+      </div>
+      <div class="flex items-center gap-2 mb-4" style="justify-content:space-between;">
+        <label style="font-size:13px;color:var(--text2);display:flex;
+                      align-items:center;gap:6px;cursor:pointer;">
+          <input type="checkbox" style="accent-color:var(--teal);">
+          Se souvenir de moi
+        </label>
+        <a onclick="showForgotPasswordForm()"
+           style="font-size:13px;color:var(--teal);font-weight:700;cursor:pointer;">
+          Mot de passe oublié ?
+        </a>
+      </div>
+      <button type="submit" class="btn-submit" id="loginBtn">
+        <span id="loginBtnText">
+          <i class="fas fa-sign-in-alt"></i> Se connecter
+        </span>
+      </button>
+    </form>
+
+    <div class="auth-footer">
+      Pas encore de compte ?
+      <a onclick="goPage('register')">Créer un compte</a>
+    </div>`;
+}
+
+function showForgotPasswordForm() {
+  const body = document.querySelector('#page-login .auth-body');
+  if (!body) return;
+
+  body.innerHTML = `
+    <div style="text-align:center;margin-bottom:24px;">
+      <div style="width:52px;height:52px;background:var(--teal-pale);border-radius:50%;
+                  display:flex;align-items:center;justify-content:center;
+                  font-size:22px;color:var(--teal);margin:0 auto 12px;">
+        <i class="fas fa-key"></i>
+      </div>
+      <h3 style="font-weight:800;font-size:18px;margin-bottom:6px;">
+        Mot de passe oublié ?
+      </h3>
+      <p style="color:var(--muted);font-size:13px;line-height:1.6;">
+        Saisissez votre adresse e-mail.<br>
+        Nous vous enverrons un lien de réinitialisation.
+      </p>
+    </div>
+
+    <form onsubmit="submitForgotPassword(event)">
+      <div class="form-group">
+        <label class="form-label">Adresse e-mail</label>
+        <div class="input-icon-wrap">
+          <i class="fas fa-envelope"></i>
+          <input type="email" class="form-control" id="forgotEmail"
+                 placeholder="vous@exemple.fr" required autofocus>
+        </div>
+      </div>
+
+      <div id="forgotMsg" style="display:none;margin-bottom:14px;"></div>
+
+      <button type="submit" class="btn-submit" id="forgotBtn">
+        <span id="forgotBtnText">
+          <i class="fas fa-paper-plane"></i> Envoyer le lien
+        </span>
+      </button>
+    </form>
+
+    <div style="text-align:center;margin-top:16px;">
+      <a onclick="showLoginForm()"
+         style="font-size:13px;color:var(--teal);font-weight:700;cursor:pointer;
+                display:inline-flex;align-items:center;gap:6px;">
+        <i class="fas fa-arrow-left"></i> Retour à la connexion
+      </a>
+    </div>`;
+}
+
+async function submitForgotPassword(e) {
+  e.preventDefault();
+  const email = document.getElementById('forgotEmail')?.value.trim();
+  const btn = document.getElementById('forgotBtn');
+  const btnTxt = document.getElementById('forgotBtnText');
+  const msg = document.getElementById('forgotMsg');
+
+  if (!email) return;
+
+  // État chargement
+  if (btn) { btn.disabled = true; }
+  if (btnTxt) { btnTxt.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Envoi…'; }
+  if (msg) { msg.style.display = 'none'; }
+
+  try {
+    const res = await fetch('/OptiMed/api/forgot_password.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ email }),
+    });
+
+    const text = await res.text();
+    let data;
+    try { data = JSON.parse(text); }
+    catch (e) {
+      console.error('forgot_password non-JSON:', text);
+      throw new Error('Réponse serveur invalide');
+    }
+
+    if (msg) {
+      msg.style.display = 'block';
+      if (data.success) {
+        msg.style.cssText = `display:block;background:#e8f5e9;color:#388e3c;
+          border:1px solid #c8e6c9;border-radius:10px;padding:12px 14px;
+          font-size:13px;text-align:center;`;
+        msg.innerHTML = `<i class="fas fa-check-circle" style="margin-right:6px;"></i>
+          ${data.message || 'Lien envoyé ! Vérifiez votre boîte e-mail.'}`;
+        // Masquer le bouton après succès
+        if (btn) btn.style.display = 'none';
+      } else {
+        msg.style.cssText = `display:block;background:#fce4ec;color:#c62828;
+          border:1px solid #f8bbd0;border-radius:10px;padding:12px 14px;
+          font-size:13px;text-align:center;`;
+        msg.innerHTML = `<i class="fas fa-exclamation-circle" style="margin-right:6px;"></i>
+          ${data.message || 'Adresse e-mail introuvable.'}`;
+        if (btn) { btn.disabled = false; }
+        if (btnTxt) { btnTxt.innerHTML = '<i class="fas fa-paper-plane"></i> Envoyer le lien'; }
+      }
+    }
+
+  } catch (err) {
+    console.error('submitForgotPassword:', err);
+    if (msg) {
+      msg.style.cssText = `display:block;background:#fce4ec;color:#c62828;
+        border:1px solid #f8bbd0;border-radius:10px;padding:12px 14px;
+        font-size:13px;text-align:center;`;
+      msg.innerHTML = `<i class="fas fa-exclamation-circle" style="margin-right:6px;"></i>
+        Erreur réseau. Réessayez.`;
+    }
+    if (btn) { btn.disabled = false; }
+    if (btnTxt) { btnTxt.innerHTML = '<i class="fas fa-paper-plane"></i> Envoyer le lien'; }
+  }
+}
 
 /* -------- AUTH --------- */
 async function handleLogin(e) {
@@ -555,10 +558,14 @@ async function handleLogin(e) {
   setBtnLoading(btn, 'loginBtnText', true);
 
   try {
-    const res = await fetch('api/login.php', {
+    const res = await fetch('/OptiMed/api/login.php', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password: pwd }),
+      body: JSON.stringify({
+        email,
+        password: pwd,
+        role: document.getElementById('loginRole')?.value || 'patient',
+      }),
     });
     const data = await res.json();
 
@@ -572,7 +579,7 @@ async function handleLogin(e) {
     // sessionStorage mirrors the server session for quick UI reads
     sessionStorage.setItem('ncUser', JSON.stringify(data.user));
     updateNavForUser();
-    showToast(`Welcome back, ${data.user.firstName}! 🎉`, 'success');
+    showToast(`Welcome back, ${data.user.firstName}!`, 'success');
     data.user.role === 'admin' ? goPage('admin') : goPage('dashboard');
 
   } catch (err) {
@@ -580,6 +587,32 @@ async function handleLogin(e) {
   } finally {
     setBtnLoading(btn, 'loginBtnText', false);
   }
+}
+
+function checkPwdStrength(val) {
+  const bar = document.getElementById('pwdBar');
+  const label = document.getElementById('pwdStrengthLabel');
+  if (!bar || !label) return;
+
+  let score = 0;
+  if (val.length >= 8) score++;
+  if (/[A-Z]/.test(val)) score++;
+  if (/[0-9]/.test(val)) score++;
+  if (/[^A-Za-z0-9]/.test(val)) score++;
+
+  const levels = [
+    { w: '0%', color: 'var(--rose)', text: '' },
+    { w: '25%', color: '#d94f7a', text: 'Faible' },
+    { w: '50%', color: '#f59e0b', text: 'Moyen' },
+    { w: '75%', color: '#0fb8a4', text: 'Bon' },
+    { w: '100%', color: '#388e3c', text: 'Excellent !' },
+  ];
+
+  const lvl = levels[score] || levels[0];
+  bar.style.width = lvl.w;
+  bar.style.background = lvl.color;
+  label.textContent = lvl.text;
+  label.style.color = lvl.color;
 }
 
 async function handleRegister(e) {
@@ -593,8 +626,13 @@ async function handleRegister(e) {
   const pwd = document.getElementById('regPassword').value;
   const conf = document.getElementById('regConfirm').value;
   const terms = document.getElementById('regTerms').checked;
+  const cne = document.getElementById('regCIN').value.trim();
+  const gender = document.getElementById('regGender').value;
 
-  clearFieldErrors(['errFirst', 'errEmail', 'errPwd', 'errConfirm', 'errTerms']);
+  clearFieldErrors(['errFirst', 'errEmail', 'errCIN', 'errGender', 'errPwd', 'errConfirm', 'errTerms']);
+
+  if (!cne) { showFieldError('errCIN', '<i class="fas fa-exclamation-circle"></i> Le CIN est requis'); valid = false; }
+  if (!gender) { showFieldError('errGender', '<i class="fas fa-exclamation-circle"></i> Veuillez sélectionner un genre'); valid = false; }
   if (first.length < 2) { showFieldError('errFirst', '<i class="fas fa-exclamation-circle"></i> First name too short'); valid = false; }
   if (!email.match(/\S+@\S+\.\S+/)) { showFieldError('errEmail', '<i class="fas fa-exclamation-circle"></i> Invalid email address'); valid = false; }
   if (pwd.length < 8) { showFieldError('errPwd', '<i class="fas fa-exclamation-circle"></i> Minimum 8 characters required'); valid = false; }
@@ -609,7 +647,7 @@ async function handleRegister(e) {
   setBtnLoading(btn, 'regBtnText', true);
 
   try {
-    const res = await fetch('api/register.php', {
+    const res = await fetch('/OptiMed/api/register.php', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -619,6 +657,8 @@ async function handleRegister(e) {
         password: pwd,
         phone: document.getElementById('regPhone').value,
         dob: document.getElementById('regDob').value,
+        cne: cne,
+        gender: gender,
       }),
     });
     const data = await res.json();
@@ -633,7 +673,7 @@ async function handleRegister(e) {
     App.currentUser = data.user;
     sessionStorage.setItem('ncUser', JSON.stringify(data.user));
     updateNavForUser();
-    showToast('Account created! Welcome to NovaCare 🌸', 'success');
+    showToast('Account created! Welcome to OptiMed ', 'success');
     goPage('dashboard');
 
   } catch (err) {
@@ -645,8 +685,7 @@ async function handleRegister(e) {
 
 
 // ── setDashboardRole ────────────────────────────────────────────────────────
-// Pose la classe CSS de rôle sur <body> et met à jour le nom affiché.
-// Le CSS dans styles.css pilote ensuite la visibilité de .patient-only / .doctor-only
+
 function setDashboardRole(role, fullName) {
   // 1. Nettoyer les classes de rôle précédentes
   document.body.classList.remove('role-patient', 'role-doctor', 'role-admin');
@@ -679,6 +718,67 @@ function doLogout() {
   goPage('home');
 }
 
+// ── Footer navigation ────────────────────────────────────────────
+
+function footerGoSpecialty(name) {
+  if (App.currentPage === 'home') {
+    // Sur l'accueil : scroll vers la section services
+    const el = document.getElementById('services');
+    if (el) { el.scrollIntoView({ behavior: 'smooth' }); return; }
+  }
+  // Ailleurs : aller à la page booking avec la spécialité pré-sélectionnée
+  App.bookingData.service = name;
+  goPage('booking');
+}
+
+function footerGoBooking() {
+  // Si connecté en tant que patient → booking
+  // Si non connecté → login d'abord
+  if (App.currentUser?.role === 'patient') {
+    goPage('booking');
+  } else if (!App.currentUser) {
+    goPage('login');
+  } else {
+    goPage('dashboard');
+  }
+}
+
+function footerGoPatient() {
+  if (!App.currentUser) {
+    goPage('login');
+  } else {
+    goToUserDashboard();
+  }
+}
+
+function goToUserDashboard() {
+  if (!App.currentUser) { goPage('login'); return; }
+  switch (App.currentUser.role) {
+    case 'admin': goPage('admin'); break;
+    case 'doctor': goPage('dashboard'); break;
+    default: goPage('dashboard'); break;
+  }
+}
+
+function updateHeroButton() {
+  const btn = document.getElementById('heroCta');
+  if (!btn) return;
+
+  const role = App.currentUser?.role;
+
+  if (role === 'admin') {
+    btn.innerHTML = '<i class="fas fa-chart-line"></i> Tableau de bord';
+    btn.onclick = () => goPage('admin');
+  } else if (role === 'doctor') {
+    btn.innerHTML = '<i class="fas fa-calendar-day"></i> Activité du jour';
+    btn.onclick = () => goPage('dashboard');
+  } else {
+    // patient ou visiteur non connecté — état par défaut
+    btn.innerHTML = '<i class="fas fa-calendar-check"></i> Prendre rendez-vous';
+    btn.onclick = () => goPage('booking');
+  }
+}
+
 function updateNavForUser() {
   const user = App.currentUser;
   const loginBtn = document.getElementById('navLoginBtn');
@@ -696,6 +796,7 @@ function updateNavForUser() {
     userArea.style.display = 'none';
     if (adminLink) adminLink.style.display = 'none';
   }
+  updateHeroButton();
 }
 
 /* --------- HOME INIT --------- */
@@ -814,7 +915,7 @@ function renderStep1() {
   // 1. Fetch live doctors from database if not already loaded
   if (!App.dynamicDoctors) {
     App.dynamicDoctors = [];
-    fetch('api/get_doctors.php', { credentials: 'include' })
+    fetch('/OptiMed/api/get_doctors.php', { credentials: 'include' })
       .then(res => res.json())
       .then(data => {
         if (data.success) {
@@ -878,7 +979,7 @@ function renderStep1() {
           const deptIconClass = DEPARTMENT_ICONS[d.department_name] || "fas fa-stethoscope";
 
           return `
-  <div onclick="App.bookingData.doctor='${docFullName}'; App.bookingData.doctorId='${d.id}'; document.querySelectorAll('.doc-opt').forEach(el=>el.classList.remove('selected')); this.classList.add('selected');"
+  <div onclick="App.bookingData.doctor='${docFullName}'; App.bookingData.doctorId='${d.id}'; renderBookingStep();"
     class="doc-opt ${isSelected ? 'selected' : ''}"
                   style="display:flex;align-items:center;gap:14px;padding:14px;border-radius:14px;border:2px solid ${isSelected ? 'var(--teal)' : 'var(--border)'};background:${isSelected ? 'var(--teal-pale)' : 'var(--surface)'};cursor:pointer;transition:.2s;">
                   
@@ -986,7 +1087,6 @@ function renderStep3() {
         </div>
         <div class="form-group"><label class="form-label">Email *</label><div class="input-icon-wrap"><i class="fas fa-envelope"></i><input type="email" class="form-control" id="bkEmail" value="${App.bookingData.email}" oninput="App.bookingData.email=this.value" placeholder="jane@example.com"></div></div>
         <div class="form-group"><label class="form-label">Special Notes / Symptoms</label><textarea class="form-control" id="bkNotes" rows="3" oninput="App.bookingData.notes=this.value" placeholder="Any symptoms, concerns, or special requests…" style="resize:vertical;">${App.bookingData.notes}</textarea></div>
-        <div style="background:var(--teal-pale);border-radius:12px;padding:14px;margin-top:4px;font-size:12px;color:var(--teal-dk);line-height:1.6;"><i class="fas fa-shield-halved" style="margin-right:6px;"></i><strong>Privacy Notice:</strong> Your information is protected under HIPAA and will never be shared without your consent.</div>
       </div>
       <div class="booking-nav">
         <button class="btn-back" onclick="prevBookingStep()"><i class="fas fa-arrow-left"></i> Back</button>
@@ -1016,7 +1116,6 @@ function renderStep4() {
             </div>`).join('')}
           ${d.notes ? `<div class="summary-row"><div class="summary-icon"><i class="fas fa-sticky-note"></i></div><div><div class="summary-lbl">Notes</div><div class="summary-val">${d.notes}</div></div></div>` : ''}
         </div>
-        <div style="background:#fef3c7;border:1px solid #fde68a;border-radius:12px;padding:14px;margin-top:14px;font-size:12px;color:#92400e;line-height:1.6;display:flex;gap:10px;"><i class="fas fa-exclamation-triangle" style="margin-top:2px;flex-shrink:0;"></i><span><strong>Cancellation Policy:</strong> Please cancel or reschedule at least 24 hours before your appointment. A confirmation email will be sent to ${d.email}.</span></div>
       </div>
       <div class="booking-nav">
         <button class="btn-back" onclick="prevBookingStep()"><i class="fas fa-arrow-left"></i> Edit</button>
@@ -1059,9 +1158,9 @@ function nextBookingStep() {
     }
     App.bookingStep = 4; // Move to the Summary / Review Step!
 
-    // 💡 NEW CRITICAL LOGIC: If on Step 4 (The Review Screen) and they hit click...
+    // If on Step 4 (The Review Screen) and they hit click...
   } else if (App.bookingStep === 4) {
-    submitBooking(); // 🔥 Call the backend database save sequence here!
+    submitBooking(); // Call the backend database save sequence here!
     return; // Halt layout re-rendering so the fetch promise handles step advancement instead
   }
 
@@ -1081,13 +1180,17 @@ function submitBooking() {
     return;
   }
 
-  // ── Formatage de la date ──────────────────────────────────────────
+  // ── Formatage de la date — LOCAL  ────────────
   let formattedDate = '';
   try {
     if (App.bookingData.date) {
-      formattedDate = App.bookingData.date instanceof Date
-        ? App.bookingData.date.toISOString().split('T')[0]
-        : String(App.bookingData.date).split('T')[0];
+      const d = App.bookingData.date instanceof Date
+        ? App.bookingData.date
+        : new Date(App.bookingData.date);
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, '0');
+      const dd = String(d.getDate()).padStart(2, '0');
+      formattedDate = `${y}-${m}-${dd}`;
     }
   } catch (e) {
     formattedDate = App.bookingData.date || '';
@@ -1116,7 +1219,7 @@ function submitBooking() {
   const btn = document.getElementById('confirmBookBtn');
   if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Envoi…'; }
 
-  fetch('api/create_appointment.php', {
+  fetch('/OptiMed/api/create_appointment.php', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     credentials: 'include',
@@ -1234,7 +1337,7 @@ async function initDashboard() {
   // ── Fetch appointments from the server ────────────────────────────────
   let myApts = [];
   try {
-    const res = await fetch('api/get_appointments.php', { credentials: 'include' });
+    const res = await fetch('/OptiMed/api/get_appointments.php', { credentials: 'include' });
     const data = await res.json();
     if (data.success) {
       myApts = data.appointments;
@@ -1250,26 +1353,62 @@ async function initDashboard() {
   const upcoming = myApts.filter(a => ['confirmed', 'pending'].includes(a.status));
   const completed = myApts.filter(a => a.status === 'completed');
 
-  // ── Stats (unchanged rendering logic) ────────────────────────────────
+  // ── KPI Cards — template identique au docteur (gradient + texte blanc) ──
   const dashStats = document.getElementById('dashStats');
-  if (dashStats) dashStats.innerHTML = [
-    { icon: 'calendar-check', color: '#e0f7fa', iconColor: 'var(--teal)', val: upcoming.length, lbl: 'Upcoming Visits', trend: '+1', up: true },
-    { icon: 'check-circle', color: '#e8f5e9', iconColor: '#388e3c', val: completed.length, lbl: 'Completed', trend: `${myApts.length} total`, up: true },
-    { icon: 'clock', color: '#fff3e0', iconColor: '#f57c00', val: upcoming[0]?.date || 'None', lbl: 'Next Appointment', trend: '', up: true },
-    { icon: 'shield-halved', color: '#f3e5f5', iconColor: '#7b1fa2', val: 'Active', lbl: 'Insurance Status', trend: 'Verified', up: true },
-  ].map(s => `
-      <div class="stat-card">
-        <div class="stat-top">
-          <div class="stat-icon" style="background:${s.color};color:${s.iconColor};">
-            <i class="fas fa-${s.icon}"></i>
-          </div>
-          <div class="stat-trend ${s.up ? 'up' : 'down'}">
-            ${s.trend ? `<i class="fas fa-arrow-${s.up ? 'up' : 'down'}"></i>${s.trend}` : ''}
+  if (dashStats) {
+    const nextApt = upcoming[0] || null;
+    const patientCards = [
+      {
+        icon: 'calendar-check',
+        bg: 'linear-gradient(135deg,#0a7c6e,#0fb8a4)',
+        val: upcoming.length,
+        lbl: 'Visites à venir',
+        sub: nextApt ? `Prochain : ${nextApt.date}` : 'Aucun planifié',
+      },
+      {
+        icon: 'check-circle',
+        bg: 'linear-gradient(135deg,#388e3c,#4caf50)',
+        val: completed.length,
+        lbl: 'Consultations terminées',
+        sub: `${myApts.length} au total`,
+      },
+      {
+        icon: 'clock',
+        bg: 'linear-gradient(135deg,#f59e0b,#fbbf24)',
+        val: nextApt ? nextApt.time : '—',
+        lbl: 'Prochain RDV',
+        sub: nextApt ? (nextApt.doctor || nextApt.service || '—') : 'Aucun à venir',
+      },
+      {
+        icon: 'shield-halved',
+        bg: 'linear-gradient(135deg,#7b1fa2,#ab47bc)',
+        val: 'Actif',
+        lbl: 'Statut Assurance',
+        sub: 'Vérifié ✓',
+      },
+    ];
+    dashStats.innerHTML = patientCards.map(c => `
+      <div style="background:${c.bg};border-radius:16px;padding:20px 22px;color:#fff;
+                  box-shadow:0 4px 20px rgba(0,0,0,.08);position:relative;overflow:hidden;">
+        <div style="position:absolute;right:-16px;top:-16px;width:80px;height:80px;
+                    border-radius:50%;background:rgba(255,255,255,.12);"></div>
+        <div style="position:absolute;right:16px;bottom:-20px;width:60px;height:60px;
+                    border-radius:50%;background:rgba(255,255,255,.08);"></div>
+        <div style="display:flex;align-items:center;justify-content:space-between;
+                    margin-bottom:16px;position:relative;">
+          <div style="width:42px;height:42px;background:rgba(255,255,255,.2);
+                      border-radius:12px;display:flex;align-items:center;
+                      justify-content:center;font-size:18px;">
+            <i class="fas fa-${c.icon}"></i>
           </div>
         </div>
-        <div class="stat-val">${s.val}</div>
-        <div class="stat-lbl">${s.lbl}</div>
+        <div style="font-size:28px;font-weight:800;letter-spacing:-1px;
+                    margin-bottom:4px;position:relative;">${c.val}</div>
+        <div style="font-size:13px;font-weight:600;opacity:.9;
+                    margin-bottom:4px;position:relative;">${c.lbl}</div>
+        <div style="font-size:11px;opacity:.7;position:relative;">${c.sub}</div>
       </div>`).join('');
+  }
 
   // ── Upcoming list, quick actions, tables (unchanged rendering logic) ──
   const upEl = document.getElementById('dashUpcoming');
@@ -1298,7 +1437,6 @@ async function initDashboard() {
     { icon: 'calendar-plus', title: 'Book Appointment', desc: 'Schedule a new visit', color: 'var(--teal)', action: `goPage('booking')` },
     { icon: 'comment-dots', title: 'Live Chat Support', desc: 'Chat with our team', color: '#7b1fa2', action: `openChat()` },
     { icon: 'phone-alt', title: 'Call Us', desc: '+212 688 003 790', color: '#388e3c', action: `showToast('Calling +212 688 003 790…','info')` },
-    { icon: 'file-medical', title: 'Medical Records', desc: 'View your documents', color: '#f57c00', action: `showToast('Medical records coming soon','info')` },
   ].map(a => `
       <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px;display:flex;align-items:center;gap:14px;cursor:pointer;transition:.2s;"
            onmouseover="this.style.borderColor='var(--teal)'" onmouseout="this.style.borderColor='var(--border)'"
@@ -1317,7 +1455,7 @@ async function initDashboard() {
 
 async function initDoctorDashboard() {
   try {
-    const res = await fetch('api/get_doctor_stats.php', { credentials: 'include' });
+    const res = await fetch('/OptiMed/api/get_doctor_stats.php', { credentials: 'include' });
     const data = await res.json();
 
     if (!data.success) {
@@ -1539,7 +1677,7 @@ async function initDocPatients() {
       </div>`;
 
     try {
-      const res = await fetch('api/get_doctor_patients.php', { credentials: 'include' });
+      const res = await fetch('/OptiMed/api/get_doctor_patients.php', { credentials: 'include' });
       const data = await res.json();
       if (!data.success) {
         container.innerHTML = `<p style="color:var(--rose);padding:20px;">${data.message}</p>`;
@@ -1719,7 +1857,7 @@ async function initDocStatus() {
     </div>`;
 
   try {
-    const res = await fetch('api/get_doctor_stats.php', { credentials: 'include' });
+    const res = await fetch('/OptiMed/api/get_doctor_stats.php', { credentials: 'include' });
     const data = await res.json();
 
     if (!data.success) {
@@ -1820,7 +1958,7 @@ async function changeAppointmentStatus(aptId, newStatus) {
   if (row) row.style.opacity = '0.4';
 
   try {
-    const res = await fetch('api/update_appointment_status.php', {
+    const res = await fetch('/OptiMed/api/update_appointment_status.php', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
@@ -1994,41 +2132,409 @@ function statusSlotColor(status) {
   }[status] || '#64748b';
 }
 
+function cancelPatientApt(aptId) {
+  const existing = document.getElementById('cancelAptModal');
+  if (existing) existing.remove();
+
+  const modal = document.createElement('div');
+  modal.id = 'cancelAptModal';
+  modal.style.cssText = `position:fixed;inset:0;background:rgba(0,0,0,.5);
+    display:flex;align-items:center;justify-content:center;z-index:9999;padding:20px;`;
+
+  modal.innerHTML = `
+    <div style="background:#fff;border-radius:20px;padding:32px;max-width:400px;
+                width:100%;box-shadow:0 20px 60px rgba(0,0,0,.15);text-align:center;">
+      <div style="width:64px;height:64px;background:#fce4ec;border-radius:50%;
+                  display:flex;align-items:center;justify-content:center;
+                  font-size:28px;color:#d94f7a;margin:0 auto 20px;">
+        <i class="fas fa-calendar-times"></i>
+      </div>
+      <h3 style="font-weight:800;font-size:20px;margin-bottom:8px;">
+        Annuler ce rendez-vous ?
+      </h3>
+      <p style="color:var(--muted);font-size:14px;margin-bottom:28px;line-height:1.6;">
+        Cette action est irréversible.<br>
+        Vous pourrez en prendre un nouveau à tout moment.
+      </p>
+      <div style="display:flex;gap:12px;">
+        <button onclick="document.getElementById('cancelAptModal').remove()"
+          style="flex:1;padding:12px;border:1px solid var(--border);border-radius:12px;
+                 background:var(--surface);font-weight:600;cursor:pointer;
+                 font-size:14px;font-family:inherit;">
+          Garder le RDV
+        </button>
+        <button id="confirmCancelBtn"
+          onclick="executeCancelApt('${aptId}')"
+          style="flex:1;padding:12px;border:none;border-radius:12px;
+                 background:#d94f7a;color:#fff;font-weight:700;
+                 cursor:pointer;font-size:14px;font-family:inherit;">
+          <i class="fas fa-times" style="margin-right:6px;"></i>Confirmer
+        </button>
+      </div>
+    </div>`;
+
+  document.body.appendChild(modal);
+  modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
+}
+
+async function executeCancelApt(aptId) {
+  const btn = document.getElementById('confirmCancelBtn');
+  if (btn) { btn.disabled = true; btn.textContent = 'Annulation…'; }
+
+  try {
+    const res = await fetch('/OptiMed/api/cancel_appointment.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ id: aptId }),
+    });
+    const data = await res.json();
+
+    if (data.success) {
+      document.getElementById('cancelAptModal')?.remove();
+      showToast('Rendez-vous annulé avec succès.', 'success');
+
+      // Mise à jour visuelle immédiate sans rechargement
+      const row = document.getElementById(`apt-row-${aptId}`);
+      if (row) {
+        const badge = row.querySelector('.apt-status-badge');
+        if (badge) {
+          badge.textContent = 'Annulé';
+          badge.className = 'apt-status-badge status-badge status-cancelled';
+        }
+        const cancelBtn = row.querySelector('.apt-cancel-btn');
+        if (cancelBtn) cancelBtn.remove();
+      } else {
+        initDashboard();
+      }
+
+    } else {
+      showToast(data.message || 'Erreur lors de l\'annulation.', 'error');
+      if (btn) { btn.disabled = false; btn.textContent = 'Confirmer'; }
+    }
+  } catch (err) {
+    showToast('Erreur réseau.', 'error');
+    console.error('executeCancelApt:', err);
+    if (btn) { btn.disabled = false; btn.textContent = 'Confirmer'; }
+  }
+}
+
+async function executeCancelApt(aptId) {
+  const btn = document.getElementById('confirmCancelBtn');
+  if (btn) { btn.disabled = true; btn.textContent = 'Annulation…'; }
+
+  try {
+    const res = await fetch('/OptiMed/api/cancel_appointment.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ id: aptId }),
+    });
+    const data = await res.json();
+
+    if (data.success) {
+      document.getElementById('cancelAptModal')?.remove();
+      showToast('Rendez-vous annulé avec succès.', 'success');
+
+      // Mise à jour visuelle sans recharger — changer le badge et masquer le bouton
+      const row = document.getElementById(`apt-row-${aptId}`);
+      if (row) {
+        // Mettre à jour le badge statut
+        const badge = row.querySelector('.apt-status-badge');
+        if (badge) {
+          badge.textContent = 'Annulé';
+          badge.className = 'apt-status-badge status-badge status-cancelled';
+        }
+        // Masquer le bouton Cancel
+        const cancelBtn = row.querySelector('.apt-cancel-btn');
+        if (cancelBtn) cancelBtn.remove();
+      } else {
+        // Si pas d'ID sur la ligne, recharger le dashboard
+        initDashboard();
+      }
+    } else {
+      showToast(data.message || 'Erreur lors de l\'annulation.', 'error');
+      if (btn) { btn.disabled = false; btn.textContent = 'Annuler le RDV'; }
+    }
+  } catch (err) {
+    showToast('Erreur réseau.', 'error');
+    console.error('executeCancelApt:', err);
+    if (btn) { btn.disabled = false; btn.textContent = 'Annuler le RDV'; }
+  }
+}
+
 function renderPatientApptsTable(apts) {
   const el = document.getElementById('patientApptsTable');
   if (!el) return;
-  if (!apts.length) { el.innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted);">No appointments yet. <a style="color:var(--teal);font-weight:700;cursor:pointer;" onclick="goPage(\'booking\')">Book your first appointment →</a></div>'; return; }
-  el.innerHTML = `<div style="overflow-x:auto;"><table class="data-table">
-      <thead><tr><th>Appointment</th><th>Doctor</th><th>Date & Time</th><th>Status</th><th>Action</th></tr></thead>
-      <tbody>${apts.map(a => `
-        <tr>
-          <td><div style="font-weight:700;font-size:13px;">${a.service}</div><div style="font-size:11px;color:var(--muted);">#${a.id}</div></td>
-          <td>${a.doctor}</td>
-          <td><div style="font-weight:600;">${a.date}</div><div style="font-size:11px;color:var(--muted);">${a.time}</div></td>
-          <td><span class="status-badge status-${a.status}">${a.status}</span></td>
-          <td>${['pending', 'confirmed'].includes(a.status) ? `<button onclick="cancelPatientApt('${a.id}')" style="font-size:11px;color:var(--rose);background:var(--rose-lt);border:none;padding:4px 10px;border-radius:8px;font-weight:700;cursor:pointer;">Cancel</button>` : ''}</td>
-        </tr>`).join('')}
-      </tbody></table></div>`;
-}
 
-function cancelPatientApt(id) {
-  const apt = App.appointments.find(a => a.id === id);
-  if (!apt) return;
-  apt.status = 'cancelled';
-  showToast('Appointment cancelled.', 'info');
-  initDashboard();
+  if (!apts.length) {
+    el.innerHTML = `
+      <div style="text-align:center;padding:40px;color:var(--muted);">
+        Aucun rendez-vous.
+        <a style="color:var(--teal);font-weight:700;cursor:pointer;"
+           onclick="goPage('booking')">Prendre un RDV →</a>
+      </div>`;
+    return;
+  }
+
+  const statusLabel = {
+    pending: 'En attente',
+    confirmed: 'Confirmé',
+    completed: 'Terminé',
+    cancelled: 'Annulé',
+  };
+
+  el.innerHTML = `
+    <div style="overflow-x:auto;">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Rendez-vous</th>
+            <th>Médecin</th>
+            <th>Date & Heure</th>
+            <th>Statut</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${apts.map(a => `
+            <tr id="apt-row-${a.id}">
+              <td>
+                <div style="font-weight:700;font-size:13px;">${a.service || 'Consultation'}</div>
+                <div style="font-size:11px;color:var(--muted);">#${a.id}</div>
+              </td>
+              <td style="font-size:13px;">${a.doctor || '—'}</td>
+              <td>
+                <div style="font-weight:600;">${a.date}</div>
+                <div style="font-size:11px;color:var(--muted);">${a.time}</div>
+              </td>
+              <td>
+                <span class="apt-status-badge status-badge status-${a.status}">
+                  ${statusLabel[a.status] || a.status}
+                </span>
+              </td>
+              <td>
+                ${['pending', 'confirmed'].includes(a.status) ? `
+                  <button onclick="cancelPatientApt('${a.id}')"
+                          class="apt-cancel-btn"
+                          style="font-size:11px;color:var(--rose);background:var(--rose-lt);
+                                 border:none;padding:5px 12px;border-radius:8px;
+                                 font-weight:700;cursor:pointer;">
+                    <i class="fas fa-times" style="margin-right:3px;"></i>Annuler
+                  </button>` : ''}
+              </td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>`;
 }
 
 function renderHistory(apts) {
   const el = document.getElementById('historyList');
   if (!el) return;
-  if (!apts.length) { el.innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted);">No past appointments found.</div>'; return; }
+  if (!apts.length) {
+    el.innerHTML = `<div style="text-align:center;padding:40px;color:var(--muted);">
+      Aucun historique pour le moment.
+    </div>`;
+    return;
+  }
+  const statusLabel = { completed: 'Terminé', cancelled: 'Annulé' };
   el.innerHTML = apts.map(a => `
-      <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:10px;display:flex;align-items:center;gap:16px;opacity:${a.status === 'cancelled' ? .65 : 1}">
-        <div style="width:48px;height:48px;background:${a.status === 'completed' ? 'var(--teal-pale)' : 'var(--rose-lt)'};border-radius:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="fas fa-${a.status === 'completed' ? 'check-circle' : 'times-circle'}" style="color:${a.status === 'completed' ? 'var(--teal)' : 'var(--rose)'};font-size:18px;"></i></div>
-        <div style="flex:1;"><div style="font-weight:700;font-size:14px;">${a.service}</div><div style="font-size:12px;color:var(--teal);font-weight:600;">${a.doctor}</div><div style="font-size:11px;color:var(--muted);margin-top:3px;"><i class="fas fa-calendar" style="margin-right:4px;"></i>${a.date} · ${a.time}${a.notes ? ` · <em>${a.notes}</em>` : ''}</div></div>
-        <span class="status-badge status-${a.status}">${a.status}</span>
-      </div>`).join('');
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;
+                padding:16px;margin-bottom:10px;display:flex;align-items:center;gap:16px;
+                opacity:${a.status === 'cancelled' ? .65 : 1}">
+      <div style="width:48px;height:48px;
+                  background:${a.status === 'completed' ? 'var(--teal-pale)' : 'var(--rose-lt)'};
+                  border-radius:14px;display:flex;align-items:center;
+                  justify-content:center;flex-shrink:0;">
+        <i class="fas fa-${a.status === 'completed' ? 'check-circle' : 'times-circle'}"
+           style="color:${a.status === 'completed' ? 'var(--teal)' : 'var(--rose)'};
+                  font-size:18px;"></i>
+      </div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-weight:700;font-size:14px;">${a.service || 'Consultation'}</div>
+        <div style="font-size:12px;color:var(--teal);font-weight:600;">${a.doctor || ''}</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:3px;">
+          <i class="fas fa-calendar" style="margin-right:4px;"></i>
+          ${a.date} · ${a.time}${a.notes ? ` · <em>${a.notes}</em>` : ''}
+        </div>
+        ${a.rating ? `
+          <div style="display:flex;align-items:center;gap:3px;margin-top:5px;">
+            ${[1, 2, 3, 4, 5].map(i =>
+    `<i class="fas fa-star" style="font-size:11px;color:${i <= a.rating ? '#f59e0b' : '#e0e0e0'};"></i>`
+  ).join('')}
+            <span style="font-size:11px;color:var(--muted);margin-left:4px;">Votre note</span>
+          </div>` : ''}
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex-shrink:0;">
+        <span class="status-badge status-${a.status}">
+          ${statusLabel[a.status] || a.status}
+        </span>
+        ${a.status === 'completed' && !a.rating ? `
+          <button onclick="openRatingModal(${a.id}, '${(a.doctor || 'ce médecin').replace(/'/g, "\\'")}')"
+            style="font-size:11px;color:var(--teal);background:var(--teal-pale);border:none;
+                   padding:4px 10px;border-radius:8px;font-weight:700;cursor:pointer;">
+            <i class="fas fa-star" style="margin-right:3px;"></i>Noter
+          </button>` : ''}
+      </div>
+    </div>`).join('');
+}
+
+
+// ═══════════════════════════════════════════════════════════════════════
+//  SYSTÈME DE NOTATION DES MÉDECINS
+// ═══════════════════════════════════════════════════════════════════════
+
+/**
+ * Affiche la modale de notation pour un rendez-vous terminé.
+ * Appelée depuis renderHistory() sur les RDV 'completed'.
+ */
+function openRatingModal(appointmentId, doctorName) {
+  // Supprimer une modale existante
+  const existing = document.getElementById('ratingModal');
+  if (existing) existing.remove();
+
+  const modal = document.createElement('div');
+  modal.id = 'ratingModal';
+  modal.style.cssText = `
+    position:fixed;inset:0;background:rgba(0,0,0,.5);
+    display:flex;align-items:center;justify-content:center;
+    z-index:9999;padding:20px;`;
+
+  modal.innerHTML = `
+    <div style="background:#fff;border-radius:20px;padding:32px;max-width:440px;
+                width:100%;box-shadow:0 20px 60px rgba(0,0,0,.15);position:relative;">
+
+      <!-- Fermer -->
+      <button onclick="document.getElementById('ratingModal').remove()"
+        style="position:absolute;top:16px;right:16px;background:none;border:none;
+               font-size:18px;color:var(--muted);cursor:pointer;">
+        <i class="fas fa-times"></i>
+      </button>
+
+      <!-- En-tête -->
+      <div style="text-align:center;margin-bottom:24px;">
+        <div style="width:64px;height:64px;background:linear-gradient(135deg,#0a7c6e,#0fb8a4);
+                    border-radius:50%;display:flex;align-items:center;justify-content:center;
+                    font-size:28px;color:#fff;margin:0 auto 16px;">
+          <i class="fas fa-star"></i>
+        </div>
+        <h3 style="font-weight:800;font-size:20px;margin-bottom:4px;">
+          Évaluer la consultation
+        </h3>
+        <p style="color:var(--muted);font-size:14px;">
+          ${doctorName}
+        </p>
+      </div>
+
+      <!-- Étoiles -->
+      <div style="text-align:center;margin-bottom:20px;">
+        <div id="starContainer" style="display:flex;justify-content:center;gap:8px;margin-bottom:8px;">
+          ${[1, 2, 3, 4, 5].map(i => `
+            <i class="fas fa-star"
+               data-val="${i}"
+               onclick="setRating(${i})"
+               onmouseover="hoverRating(${i})"
+               onmouseout="resetStars()"
+               style="font-size:32px;color:#e0e0e0;cursor:pointer;transition:color .15s;">
+            </i>`).join('')}
+        </div>
+        <div id="ratingLabel" style="font-size:13px;color:var(--muted);font-weight:600;
+                                      height:18px;"></div>
+      </div>
+
+      <!-- Commentaire -->
+      <textarea id="ratingComment" rows="3" placeholder="Commentaire optionnel…"
+        style="width:100%;border:1px solid var(--border);border-radius:12px;
+               padding:12px 14px;font-size:13px;resize:none;outline:none;
+               font-family:inherit;color:var(--text);box-sizing:border-box;
+               transition:border-color .2s;"
+        onfocus="this.style.borderColor='var(--teal)'"
+        onblur="this.style.borderColor='var(--border)'">
+      </textarea>
+
+      <!-- Bouton -->
+      <button id="submitRatingBtn"
+        onclick="submitRating(${appointmentId})"
+        style="width:100%;margin-top:16px;background:linear-gradient(135deg,#0a7c6e,#0fb8a4);
+               color:#fff;border:none;padding:14px;border-radius:12px;font-weight:700;
+               font-size:15px;cursor:pointer;transition:opacity .2s;">
+        Envoyer mon avis ✓
+      </button>
+    </div>`;
+
+  document.body.appendChild(modal);
+  // Fermer au clic sur le fond
+  modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
+}
+
+// Labels des étoiles
+let _currentRating = 0;
+
+function setRating(val) {
+  _currentRating = val;
+  updateStars(val);
+  const lbl = document.getElementById('ratingLabel');
+  if (lbl) {
+    lbl.textContent = _ratingLabels[val] || '';
+    lbl.style.color = val >= 4 ? 'var(--teal)' : val >= 3 ? '#f59e0b' : '#d94f7a';
+  }
+}
+
+function hoverRating(val) {
+  updateStars(val);
+}
+
+function resetStars() {
+  updateStars(_currentRating);
+}
+
+function updateStars(val) {
+  const stars = document.querySelectorAll('#starContainer .fa-star');
+  stars.forEach((s, i) => {
+    s.style.color = i < val ? '#f59e0b' : '#e0e0e0';
+    s.style.transform = i < val ? 'scale(1.1)' : 'scale(1)';
+  });
+}
+
+async function submitRating(appointmentId) {
+  if (!_currentRating) {
+    showToast('Veuillez sélectionner une note.', 'error');
+    return;
+  }
+
+  const comment = (document.getElementById('ratingComment')?.value || '').trim();
+  const btn = document.getElementById('submitRatingBtn');
+  if (btn) { btn.disabled = true; btn.textContent = 'Envoi…'; }
+
+  try {
+    const res = await fetch('/OptiMed/api/rate_appointment.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({
+        appointment_id: appointmentId,
+        rating: _currentRating,
+        comment: comment,
+      }),
+    });
+    const data = await res.json();
+
+    if (data.success) {
+      document.getElementById('ratingModal')?.remove();
+      showToast('Merci pour votre évaluation !', 'success');
+      _currentRating = 0;
+      // Rafraîchir l'historique pour masquer le bouton "Noter"
+      initDashboard();
+    } else {
+      showToast(data.message || "Erreur lors de l'envoi.", 'error');
+      if (btn) { btn.disabled = false; btn.textContent = "Envoyer mon avis ✓"; }
+    }
+  } catch (err) {
+    showToast('Erreur réseau.', 'error');
+    if (btn) { btn.disabled = false; btn.textContent = "Envoyer mon avis ✓"; }
+    console.error('submitRating:', err);
+  }
 }
 
 function renderProfileCard(user) {
@@ -2039,46 +2545,252 @@ function renderProfileCard(user) {
         <div class="profile-avatar">${user.initials}</div>
         <div class="profile-body">
           <div class="profile-name">${user.firstName} ${user.lastName || ''}</div>
-          <div class="profile-role">Patient · NovaCare</div>
+          <div class="profile-role">Patient · OptiMed</div>
           <div class="profile-info-grid">
-            ${[{ lbl: 'Email', val: user.email }, { lbl: 'Phone', val: user.phone || '—' }, { lbl: 'Date of Birth', val: user.dob || '—' }, { lbl: 'Blood Type', val: user.bloodType || '—' }, { lbl: 'Insurance', val: user.insurance || '—' }, { lbl: 'Emergency Contact', val: user.emergencyContact || '—' }].map(f => `
+            ${[
+      { lbl: 'Email', val: user.email },
+      { lbl: 'Téléphone', val: user.phone || '—' },
+      { lbl: 'CIN', val: user.cne || '—' },
+      { lbl: 'Date de naissance', val: user.dob || '—' },
+      { lbl: 'Genre', val: user.gender === 'male' ? 'Homme' : user.gender === 'female' ? 'Femme' : '—' },
+      { lbl: 'Blood Type', val: user.bloodType || '—' },
+      { lbl: 'Insurance', val: user.insurance || '—' },
+      { lbl: 'Emergency Contact', val: user.emergencyContact || '—' }
+    ].map(f => `
               <div class="profile-info-item"><div class="profile-info-lbl">${f.lbl}</div><div class="profile-info-val">${f.val}</div></div>`).join('')}
           </div>
-          <button class="edit-profile-btn" onclick="showToast('Profile editing coming soon!','info')"><i class="fas fa-edit"></i> Edit Profile</button>
-        </div>
+          </div>
       </div>`;
 
   const pf = document.getElementById('profileForm');
   if (pf) pf.innerHTML = `
       <div style="background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:24px;">
-        <h3 style="font-weight:700;font-size:16px;margin-bottom:20px;">Update Information</h3>
+        <h3 style="font-weight:700;font-size:16px;margin-bottom:20px;">Modifier mes informations</h3>
         <div class="form-row">
-          <div class="form-group"><label class="form-label">First Name</label><input class="form-control" type="text" value="${user.firstName}" id="pfFirst"></div>
-          <div class="form-group"><label class="form-label">Last Name</label><input class="form-control" type="text" value="${user.lastName || ''}" id="pfLast"></div>
+          <div class="form-group"><label class="form-label">Prénom</label><input class="form-control" type="text" value="${user.firstName}" id="pfFirst"></div>
+          <div class="form-group"><label class="form-label">Nom</label><input class="form-control" type="text" value="${user.lastName || ''}" id="pfLast"></div>
         </div>
         <div class="form-group"><label class="form-label">Email</label><input class="form-control" type="email" value="${user.email}" id="pfEmail"></div>
-        <div class="form-group"><label class="form-label">Phone</label><input class="form-control" type="tel" value="${user.phone || ''}" id="pfPhone"></div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Téléphone</label><input class="form-control" type="tel" value="${user.phone || ''}" id="pfPhone"></div>
+          <div class="form-group"><label class="form-label">CIN</label><input class="form-control" type="text" value="${user.cne || ''}" id="pfCIN"></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Date de naissance</label><input class="form-control" type="date" value="${user.dob || ''}" id="pfDob"></div>
+          <div class="form-group">
+            <label class="form-label">Genre</label>
+            <select class="form-control" id="pfGender">
+              <option value="" ${!user.gender ? 'selected' : ''}>—</option>
+              <option value="male"   ${user.gender === 'male' ? 'selected' : ''}>Homme</option>
+              <option value="female" ${user.gender === 'female' ? 'selected' : ''}>Femme</option>
+            </select>
+          </div>
+        </div>
         <div class="form-row">
           <div class="form-group"><label class="form-label">Blood Type</label><select class="form-control" id="pfBlood"><option>—</option>${['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'].map(b => `<option ${user.bloodType === b ? 'selected' : ''}>${b}</option>`).join('')}</select></div>
           <div class="form-group"><label class="form-label">Insurance</label><input class="form-control" type="text" value="${user.insurance || ''}" id="pfInsurance"></div>
         </div>
-        <button class="btn-submit" onclick="saveProfile()"><i class="fas fa-save"></i> Save Changes</button>
+        <button class="btn-submit" id="pfSaveBtn" onclick="saveProfile()"><i class="fas fa-save"></i> Enregistrer</button>
       </div>`;
 }
 
-function saveProfile() {
+// ═══════════════════════════════════════════════════════════════════════════
+//  SYSTÈME DE NOTATION DES MÉDECINS
+// ═══════════════════════════════════════════════════════════════════════════
+
+function openRatingModal(appointmentId, doctorName) {
+  const existing = document.getElementById('ratingModal');
+  if (existing) existing.remove();
+  window._currentRating = 0;
+
+  const modal = document.createElement('div');
+  modal.id = 'ratingModal';
+  modal.style.cssText = `position:fixed;inset:0;background:rgba(0,0,0,.5);
+    display:flex;align-items:center;justify-content:center;z-index:9999;padding:20px;`;
+
+  modal.innerHTML = `
+    <div style="background:#fff;border-radius:20px;padding:32px;max-width:440px;
+                width:100%;box-shadow:0 20px 60px rgba(0,0,0,.15);position:relative;">
+      <button onclick="document.getElementById('ratingModal').remove()"
+        style="position:absolute;top:16px;right:16px;background:none;border:none;
+               font-size:18px;color:var(--muted);cursor:pointer;">
+        <i class="fas fa-times"></i>
+      </button>
+      <div style="text-align:center;margin-bottom:24px;">
+        <div style="width:64px;height:64px;
+                    background:linear-gradient(135deg,#0a7c6e,#0fb8a4);
+                    border-radius:50%;display:flex;align-items:center;
+                    justify-content:center;font-size:28px;color:#fff;
+                    margin:0 auto 16px;">
+          <i class="fas fa-star"></i>
+        </div>
+        <h3 style="font-weight:800;font-size:20px;margin-bottom:4px;">
+          Évaluer la consultation
+        </h3>
+        <p style="color:var(--muted);font-size:14px;">${doctorName}</p>
+      </div>
+      <div style="text-align:center;margin-bottom:20px;">
+        <div id="starContainer"
+             style="display:flex;justify-content:center;gap:8px;margin-bottom:8px;">
+          ${[1, 2, 3, 4, 5].map(i => `
+            <i class="fas fa-star" data-val="${i}"
+               onclick="setRating(${i})"
+               onmouseover="hoverRating(${i})"
+               onmouseout="resetStars()"
+               style="font-size:32px;color:#e0e0e0;cursor:pointer;
+                      transition:color .15s,transform .15s;">
+            </i>`).join('')}
+        </div>
+        <div id="ratingLabel"
+             style="font-size:13px;color:var(--muted);font-weight:600;height:18px;">
+        </div>
+      </div>
+      <textarea id="ratingComment" rows="3"
+        placeholder="Commentaire optionnel…"
+        style="width:100%;border:1px solid var(--border);border-radius:12px;
+               padding:12px 14px;font-size:13px;resize:none;outline:none;
+               font-family:inherit;color:var(--text);box-sizing:border-box;"
+        onfocus="this.style.borderColor='var(--teal)'"
+        onblur="this.style.borderColor='var(--border)'"></textarea>
+      <button id="submitRatingBtn"
+        onclick="submitRating(${appointmentId})"
+        style="width:100%;margin-top:16px;
+               background:linear-gradient(135deg,#0a7c6e,#0fb8a4);
+               color:#fff;border:none;padding:14px;border-radius:12px;
+               font-weight:700;font-size:15px;cursor:pointer;">
+        Envoyer mon avis ✓
+      </button>
+    </div>`;
+
+  document.body.appendChild(modal);
+  modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
+}
+
+const _ratingLabels = ['', 'Mauvais', 'Passable', 'Bien', 'Très bien', 'Excellent !'];
+
+function setRating(val) {
+  window._currentRating = val;
+  _updateStars(val);
+  const lbl = document.getElementById('ratingLabel');
+  if (lbl) {
+    lbl.textContent = _ratingLabels[val] || '';
+    lbl.style.color = val >= 4 ? 'var(--teal)' : val >= 3 ? '#f59e0b' : '#d94f7a';
+  }
+}
+
+function hoverRating(val) { _updateStars(val); }
+function resetStars() { _updateStars(window._currentRating || 0); }
+
+function _updateStars(val) {
+  document.querySelectorAll('#starContainer .fa-star').forEach((s, i) => {
+    s.style.color = i < val ? '#f59e0b' : '#e0e0e0';
+    s.style.transform = i < val ? 'scale(1.1)' : 'scale(1)';
+  });
+}
+
+async function submitRating(appointmentId) {
+  const rating = window._currentRating || 0;
+  if (!rating) { showToast('Veuillez sélectionner une note.', 'error'); return; }
+
+  const comment = (document.getElementById('ratingComment')?.value || '').trim();
+  const btn = document.getElementById('submitRatingBtn');
+  if (btn) { btn.disabled = true; btn.textContent = 'Envoi…'; }
+
+  try {
+    const res = await fetch('/OptiMed/api/rate_appointment.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({
+        appointment_id: appointmentId,
+        rating: rating,
+        comment: comment,
+      }),
+    });
+
+    const text = await res.text();
+    console.log('[submitRating] réponse brute:', text);
+
+    let data;
+    try {
+      data = JSON.parse(text);
+    } catch (e) {
+      console.error('[submitRating] non-JSON:', text);
+      showToast('Erreur serveur — voir console.', 'error');
+      if (btn) { btn.disabled = false; btn.textContent = 'Envoyer mon avis ✓'; }
+      return;
+    }
+
+    if (data.success) {
+      document.getElementById('ratingModal')?.remove();
+      showToast('Merci pour votre évaluation !', 'success');
+      window._currentRating = 0;
+      initDashboard();
+    } else {
+      showToast(data.message || 'Erreur.', 'error');
+      if (btn) { btn.disabled = false; btn.textContent = 'Envoyer mon avis ✓'; }
+    }
+  } catch (err) {
+    showToast('Erreur réseau.', 'error');
+    console.error('[submitRating]', err);
+    if (btn) { btn.disabled = false; btn.textContent = 'Envoyer mon avis ✓'; }
+  }
+}
+
+async function saveProfile() {
   if (!App.currentUser) return;
-  App.currentUser.firstName = document.getElementById('pfFirst').value;
-  App.currentUser.lastName = document.getElementById('pfLast').value;
-  App.currentUser.email = document.getElementById('pfEmail').value;
-  App.currentUser.phone = document.getElementById('pfPhone').value;
-  App.currentUser.bloodType = document.getElementById('pfBlood').value;
-  App.currentUser.insurance = document.getElementById('pfInsurance').value;
-  App.currentUser.initials = (App.currentUser.firstName[0] + (App.currentUser.lastName?.[0] || '')).toUpperCase();
-  sessionStorage.setItem('ncUser', JSON.stringify(App.currentUser));
-  updateNavForUser();
-  renderProfileCard(App.currentUser);
-  showToast('Profile updated successfully!', 'success');
+
+  const payload = {
+    firstName: document.getElementById('pfFirst').value.trim(),
+    lastName: document.getElementById('pfLast').value.trim(),
+    email: document.getElementById('pfEmail').value.trim(),
+    phone: document.getElementById('pfPhone').value.trim(),
+    cne: document.getElementById('pfCIN').value.trim(),
+    dob: document.getElementById('pfDob').value,
+    gender: document.getElementById('pfGender').value,
+    bloodType: document.getElementById('pfBlood').value,
+    insurance: document.getElementById('pfInsurance').value.trim(),
+  };
+
+  const btn = document.getElementById('pfSaveBtn');
+  if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enregistrement…'; }
+
+  try {
+    const res = await fetch('/OptiMed/api/update_profile.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify(payload),
+    });
+
+    const text = await res.text();
+    let data;
+    try { data = JSON.parse(text); }
+    catch (e) {
+      console.error('saveProfile non-JSON:', text);
+      showToast('Erreur serveur — voir console.', 'error');
+      if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fas fa-save"></i> Enregistrer'; }
+      return;
+    }
+
+    if (data.success) {
+      Object.assign(App.currentUser, payload);
+      App.currentUser.initials = (payload.firstName[0] + (payload.lastName?.[0] || '')).toUpperCase();
+      sessionStorage.setItem('ncUser', JSON.stringify(App.currentUser));
+
+      updateNavForUser();
+      renderProfileCard(App.currentUser);
+      showToast('Profil mis à jour avec succès !', 'success');
+    } else {
+      showToast(data.message || 'Erreur lors de la mise à jour.', 'error');
+      if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fas fa-save"></i> Enregistrer'; }
+    }
+
+  } catch (err) {
+    showToast('Erreur réseau.', 'error');
+    console.error('saveProfile:', err);
+    if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fas fa-save"></i> Enregistrer'; }
+  }
 }
 
 function switchDashTab(tab) {
@@ -2165,7 +2877,7 @@ async function loadAdminDashboard() {
   const feedContainer = document.getElementById('adminActivityFeed');
 
   try {
-    const res = await fetch('api/get_admin_dashboard.php', { credentials: 'include' });
+    const res = await fetch('/OptiMed/api/get_admin_dashboard.php', { credentials: 'include' });
 
     // Si le fichier PHP renvoie une erreur système (ex: Erreur 500)
     if (!res.ok) {
@@ -2185,12 +2897,61 @@ async function loadAdminDashboard() {
       return;
     }
 
-    // 1. Remplissage des compteurs
-    if (data.stats) {
-      if (document.getElementById('stat-total-appointments')) document.getElementById('stat-total-appointments').innerText = data.stats.total_appointments;
-      if (document.getElementById('stat-pending-review')) document.getElementById('stat-pending-review').innerText = data.stats.pending_reviews;
-      if (document.getElementById('stat-confirmed-appointments')) document.getElementById('stat-confirmed-appointments').innerText = data.stats.confirmed_appointments;
-      if (document.getElementById('stat-total-patients')) document.getElementById('stat-total-patients').innerText = data.stats.total_patients;
+    // 1. KPI Cards — template identique au docteur (gradient + texte blanc)
+    const adminStats = document.getElementById('adminStats');
+    if (adminStats && data.stats) {
+      const s = data.stats;
+      const adminCards = [
+        {
+          icon: 'calendar-alt',
+          bg: 'linear-gradient(135deg,#0a7c6e,#0fb8a4)',
+          val: s.total_appointments,
+          lbl: 'Total Rendez-vous',
+          sub: 'Depuis le début',
+        },
+        {
+          icon: 'hourglass-half',
+          bg: 'linear-gradient(135deg,#f59e0b,#fbbf24)',
+          val: s.pending_reviews,
+          lbl: 'En Attente',
+          sub: s.pending_reviews > 0 ? 'Nécessitent une action' : 'File vide',
+        },
+        {
+          icon: 'check-circle',
+          bg: 'linear-gradient(135deg,#388e3c,#4caf50)',
+          val: s.confirmed_appointments,
+          lbl: 'Confirmés',
+          sub: 'Cette semaine',
+        },
+        {
+          icon: 'users',
+          bg: 'linear-gradient(135deg,#7b1fa2,#ab47bc)',
+          val: s.total_patients,
+          lbl: 'Total Patients',
+          sub: 'Inscrits sur la plateforme',
+        },
+      ];
+      adminStats.innerHTML = adminCards.map(c => `
+        <div style="background:${c.bg};border-radius:16px;padding:20px 22px;color:#fff;
+                    box-shadow:0 4px 20px rgba(0,0,0,.08);position:relative;overflow:hidden;">
+          <div style="position:absolute;right:-16px;top:-16px;width:80px;height:80px;
+                      border-radius:50%;background:rgba(255,255,255,.12);"></div>
+          <div style="position:absolute;right:16px;bottom:-20px;width:60px;height:60px;
+                      border-radius:50%;background:rgba(255,255,255,.08);"></div>
+          <div style="display:flex;align-items:center;justify-content:space-between;
+                      margin-bottom:16px;position:relative;">
+            <div style="width:42px;height:42px;background:rgba(255,255,255,.2);
+                        border-radius:12px;display:flex;align-items:center;
+                        justify-content:center;font-size:18px;">
+              <i class="fas fa-${c.icon}"></i>
+            </div>
+          </div>
+          <div style="font-size:28px;font-weight:800;letter-spacing:-1px;
+                      margin-bottom:4px;position:relative;">${c.val}</div>
+          <div style="font-size:13px;font-weight:600;opacity:.9;
+                      margin-bottom:4px;position:relative;">${c.lbl}</div>
+          <div style="font-size:11px;opacity:.7;position:relative;">${c.sub}</div>
+        </div>`).join('');
     }
 
     // 2. Remplissage du tableau des rendez-vous
@@ -2258,7 +3019,7 @@ async function initAdminAppointments() {
     </div>`;
 
   try {
-    const res = await fetch('api/get_all_appointments.php', { credentials: 'include' });
+    const res = await fetch('/OptiMed/api/get_all_appointments.php', { credentials: 'include' });
     const data = await res.json();
     if (!data.success) {
       el.innerHTML = `<p style="color:var(--rose);padding:20px;">${data.message}</p>`;
@@ -2374,7 +3135,7 @@ function renderAdminAptsTable(apts) {
 
 async function updateAdminAptStatus(id, newStatus) {
   try {
-    const res = await fetch('api/update_appointment_status.php', {
+    const res = await fetch('/OptiMed/api/update_appointment_status.php', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
@@ -2401,6 +3162,473 @@ function filterAdminAptsByStatus(s) {
   App.filterAptStatus = s || '';
   _applyAdminAptFilters();
 }
+
+// ═══════════════════════════════════════════════════════════════════════════
+//  ADMIN — GESTION DES UTILISATEURS
+// ═══════════════════════════════════════════════════════════════════════════
+
+let _usersCache = [];
+
+async function initAdminUsers() {
+  const container = document.getElementById('adminUsersTable');
+  if (!container) return;
+
+  container.innerHTML = `
+    <div style="text-align:center;padding:40px;color:var(--muted);">
+      <i class="fas fa-spinner fa-spin" style="font-size:24px;"></i>
+    </div>`;
+
+  try {
+    const res = await fetch('/OptiMed/api/get_all_users.php', { credentials: 'include' });
+    const data = await res.json();
+
+    if (!data.success) {
+      container.innerHTML = `<p style="color:var(--rose);padding:20px;">${data.message}</p>`;
+      return;
+    }
+
+    _usersCache = data.users;
+    renderUsersTable(_usersCache);
+
+  } catch (err) {
+    container.innerHTML = `<p style="color:var(--rose);padding:20px;">Erreur réseau.</p>`;
+    console.error('initAdminUsers:', err);
+  }
+}
+
+function renderUsersTable(users) {
+  const container = document.getElementById('adminUsersTable');
+  if (!container) return;
+
+  if (!users.length) {
+    container.innerHTML = `
+      <div style="text-align:center;padding:50px;color:var(--muted);">
+        <i class="fas fa-users-slash"
+           style="font-size:32px;margin-bottom:12px;display:block;opacity:.4;"></i>
+        Aucun utilisateur trouvé.
+      </div>`;
+    return;
+  }
+
+  const roleStyle = {
+    patient: 'background:#e0f7fa;color:#0a7c6e;',
+    doctor: 'background:#e8f5e9;color:#388e3c;',
+    admin: 'background:#f3e5f5;color:#7b1fa2;',
+  };
+  const roleLabel = { patient: 'Patient', doctor: 'Médecin', admin: 'Admin' };
+  const roleIcon = { patient: 'user', doctor: 'user-md', admin: 'shield-halved' };
+
+  container.innerHTML = `
+    <div style="overflow-x:auto;">
+      <table class="data-table" style="width:100%;border-collapse:collapse;">
+        <thead>
+          <tr>
+            <th style="padding:10px 16px;font-size:11px;color:var(--muted);font-weight:600;
+                       text-align:left;border-bottom:1px solid var(--border);">Utilisateur</th>
+            <th style="padding:10px 16px;font-size:11px;color:var(--muted);font-weight:600;
+                       text-align:left;border-bottom:1px solid var(--border);">Email</th>
+            <th style="padding:10px 16px;font-size:11px;color:var(--muted);font-weight:600;
+                       text-align:left;border-bottom:1px solid var(--border);">Rôle</th>
+            <th style="padding:10px 16px;font-size:11px;color:var(--muted);font-weight:600;
+                       text-align:left;border-bottom:1px solid var(--border);">Inscrit le</th>
+            <th style="padding:10px 16px;font-size:11px;color:var(--muted);font-weight:600;
+                       text-align:left;border-bottom:1px solid var(--border);">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${users.map(u => `
+            <tr style="border-bottom:1px solid var(--border);">
+              <td style="padding:12px 16px;">
+                <div style="display:flex;align-items:center;gap:10px;">
+                  <div style="width:36px;height:36px;border-radius:50%;
+                              background:${roleStyle[u.role] || 'background:#e0e0e0;'};
+                              display:flex;align-items:center;justify-content:center;
+                              font-weight:700;font-size:13px;flex-shrink:0;">
+                    <i class="fas fa-${roleIcon[u.role] || 'user'}"
+                       style="color:${u.role === 'doctor' ? '#388e3c' :
+      u.role === 'admin' ? '#7b1fa2' : '#0a7c6e'};"></i>
+                  </div>
+                  <div>
+                    <div style="font-weight:700;font-size:13px;">${u.full_name || '—'}</div>
+                    <div style="font-size:11px;color:var(--muted);">#${u.id}</div>
+                  </div>
+                </div>
+              </td>
+              <td style="padding:12px 16px;font-size:13px;color:var(--muted);">${u.email}</td>
+              <td style="padding:12px 16px;">
+                <span style="padding:4px 10px;border-radius:10px;font-size:11px;
+                             font-weight:700;${roleStyle[u.role] || ''}">
+                  ${roleLabel[u.role] || u.role}
+                </span>
+              </td>
+              <td style="padding:12px 16px;font-size:12px;color:var(--muted);">
+                ${u.created_at ? new Date(u.created_at).toLocaleDateString('fr-FR') : '—'}
+              </td>
+              <td style="padding:12px 16px;white-space:nowrap;">
+                <button onclick="editUser('${u.id}')"
+                  style="font-size:11px;color:var(--teal);background:var(--teal-pale);
+                         border:none;padding:5px 10px;border-radius:7px;
+                         cursor:pointer;font-weight:700;margin-right:6px;">
+                  <i class="fas fa-edit" style="margin-right:3px;"></i>Modifier
+                </button>
+                <button onclick="confirmDeleteUser('${u.id}', '${(u.full_name || u.email).replace(/'/g, "\\'")}')"
+                  style="font-size:11px;color:#d94f7a;background:#fce4ec;
+                         border:none;padding:5px 10px;border-radius:7px;
+                         cursor:pointer;font-weight:700;">
+                  <i class="fas fa-trash" style="margin-right:3px;"></i>Supprimer
+                </button>
+              </td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>`;
+}
+
+function filterUsersTable(q) {
+  const role = document.getElementById('usersRoleFilter')?.value || '';
+  const term = (q || '').toLowerCase();
+  let filtered = _usersCache;
+  if (term) filtered = filtered.filter(u =>
+    (u.full_name || '').toLowerCase().includes(term) ||
+    (u.email || '').toLowerCase().includes(term)
+  );
+  if (role) filtered = filtered.filter(u => u.role === role);
+  renderUsersTable(filtered);
+}
+
+function confirmDeleteUser(id, name) {
+  const existing = document.getElementById('deleteUserModal');
+  if (existing) existing.remove();
+
+  const modal = document.createElement('div');
+  modal.id = 'deleteUserModal';
+  modal.style.cssText = `position:fixed;inset:0;background:rgba(0,0,0,.5);
+    display:flex;align-items:center;justify-content:center;z-index:9999;padding:20px;`;
+
+  modal.innerHTML = `
+    <div style="background:#fff;border-radius:20px;padding:32px;max-width:400px;
+                width:100%;box-shadow:0 20px 60px rgba(0,0,0,.15);text-align:center;">
+      <div style="width:64px;height:64px;background:#fce4ec;border-radius:50%;
+                  display:flex;align-items:center;justify-content:center;
+                  font-size:28px;color:#d94f7a;margin:0 auto 20px;">
+        <i class="fas fa-trash"></i>
+      </div>
+      <h3 style="font-weight:800;font-size:20px;margin-bottom:8px;">
+        Supprimer ce compte ?
+      </h3>
+      <p style="color:var(--muted);font-size:14px;margin-bottom:28px;">
+        Vous allez supprimer le compte de <strong>${name}</strong>.<br>
+        Cette action est irréversible.
+      </p>
+      <div style="display:flex;gap:12px;justify-content:center;">
+        <button onclick="document.getElementById('deleteUserModal').remove()"
+          style="flex:1;padding:12px;border:1px solid var(--border);border-radius:12px;
+                 background:var(--surface);font-weight:600;cursor:pointer;font-size:14px;">
+          Annuler
+        </button>
+        <button onclick="deleteUser(${id})"
+          style="flex:1;padding:12px;border:none;border-radius:12px;
+                 background:#d94f7a;color:#fff;font-weight:700;
+                 cursor:pointer;font-size:14px;">
+          Supprimer
+        </button>
+      </div>
+    </div>`;
+
+  document.body.appendChild(modal);
+  modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
+}
+
+async function deleteUser(id) {
+  document.getElementById('deleteUserModal')?.remove();
+  try {
+    const res = await fetch('/OptiMed/api/delete_user.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ id }),
+    });
+    const data = await res.json();
+    if (data.success) {
+      showToast('Utilisateur supprimé avec succès.', 'success');
+      initAdminUsers();
+    } else {
+      showToast(data.message || 'Erreur lors de la suppression.', 'error');
+    }
+  } catch (err) {
+    showToast('Erreur réseau.', 'error');
+    console.error('deleteUser:', err);
+  }
+}
+
+function editUser(id) {
+  const user = _usersCache.find(u => String(u.id) === String(id));
+  if (!user) return;
+
+  const existing = document.getElementById('editUserModal');
+  if (existing) existing.remove();
+
+  const modal = document.createElement('div');
+  modal.id = 'editUserModal';
+  modal.style.cssText = `position:fixed;inset:0;background:rgba(0,0,0,.5);
+    display:flex;align-items:center;justify-content:center;z-index:9999;padding:20px;`;
+
+  modal.innerHTML = `
+    <div style="background:#fff;border-radius:20px;padding:32px;max-width:460px;
+                width:100%;box-shadow:0 20px 60px rgba(0,0,0,.15);position:relative;">
+
+      <!-- Fermer -->
+      <button onclick="document.getElementById('editUserModal').remove()"
+        style="position:absolute;top:16px;right:16px;background:none;border:none;
+               font-size:18px;color:var(--muted);cursor:pointer;">
+        <i class="fas fa-times"></i>
+      </button>
+
+      <!-- En-tête -->
+      <div style="display:flex;align-items:center;gap:14px;margin-bottom:24px;">
+        <div style="width:52px;height:52px;border-radius:50%;
+                    background:linear-gradient(135deg,#0a7c6e,#0fb8a4);
+                    display:flex;align-items:center;justify-content:center;
+                    color:#fff;font-size:20px;">
+          <i class="fas fa-user-edit"></i>
+        </div>
+        <div>
+          <h3 style="font-weight:800;font-size:18px;margin-bottom:2px;">
+            Modifier l'utilisateur
+          </h3>
+          <div style="font-size:12px;color:var(--muted);">#${user.id} · ${user.email}</div>
+        </div>
+      </div>
+
+      <!-- Formulaire -->
+      <div style="display:flex;flex-direction:column;gap:14px;">
+
+        <div>
+          <label style="font-size:12px;font-weight:700;color:var(--text2);
+                        display:block;margin-bottom:6px;">Nom complet</label>
+          <input id="editUserName" type="text" value="${user.full_name || ''}"
+            style="width:100%;border:1px solid var(--border);border-radius:10px;
+                   padding:10px 14px;font-size:13px;outline:none;box-sizing:border-box;
+                   font-family:inherit;transition:border-color .2s;"
+            onfocus="this.style.borderColor='var(--teal)'"
+            onblur="this.style.borderColor='var(--border)'">
+        </div>
+
+        <div>
+          <label style="font-size:12px;font-weight:700;color:var(--text2);
+                        display:block;margin-bottom:6px;">Email</label>
+          <input id="editUserEmail" type="email" value="${user.email || ''}"
+            style="width:100%;border:1px solid var(--border);border-radius:10px;
+                   padding:10px 14px;font-size:13px;outline:none;box-sizing:border-box;
+                   font-family:inherit;transition:border-color .2s;"
+            onfocus="this.style.borderColor='var(--teal)'"
+            onblur="this.style.borderColor='var(--border)'">
+        </div>
+
+        <div>
+          <label style="font-size:12px;font-weight:700;color:var(--text2);
+                        display:block;margin-bottom:6px;">Rôle</label>
+          <select id="editUserRole"
+            style="width:100%;border:1px solid var(--border);border-radius:10px;
+                   padding:10px 14px;font-size:13px;outline:none;box-sizing:border-box;
+                   font-family:inherit;background:var(--surface);cursor:pointer;
+                   transition:border-color .2s;"
+            onfocus="this.style.borderColor='var(--teal)'"
+            onblur="this.style.borderColor='var(--border)'">
+            <option value="patient" ${user.role === 'patient' ? 'selected' : ''}>Patient</option>
+            <option value="doctor"  ${user.role === 'doctor' ? 'selected' : ''}>Médecin</option>
+            <option value="admin"   ${user.role === 'admin' ? 'selected' : ''}>Admin</option>
+          </select>
+        </div>
+
+        <div>
+          <label style="font-size:12px;font-weight:700;color:var(--text2);
+                        display:block;margin-bottom:6px;">
+            Nouveau mot de passe
+            <span style="font-weight:400;color:var(--muted);"> (laisser vide pour ne pas changer)</span>
+          </label>
+          <input id="editUserPassword" type="password" placeholder="••••••••"
+            style="width:100%;border:1px solid var(--border);border-radius:10px;
+                   padding:10px 14px;font-size:13px;outline:none;box-sizing:border-box;
+                   font-family:inherit;transition:border-color .2s;"
+            onfocus="this.style.borderColor='var(--teal)'"
+            onblur="this.style.borderColor='var(--border)'">
+        </div>
+
+      </div>
+
+      <!-- Boutons -->
+      <div style="display:flex;gap:12px;margin-top:24px;">
+        <button onclick="document.getElementById('editUserModal').remove()"
+          style="flex:1;padding:12px;border:1px solid var(--border);border-radius:12px;
+                 background:var(--surface);font-weight:600;cursor:pointer;
+                 font-size:14px;font-family:inherit;">
+          Annuler
+        </button>
+        <button onclick="saveEditUser(${user.id})"
+          style="flex:1;padding:12px;border:none;border-radius:12px;
+                 background:linear-gradient(135deg,#0a7c6e,#0fb8a4);color:#fff;
+                 font-weight:700;cursor:pointer;font-size:14px;font-family:inherit;">
+          <i class="fas fa-save" style="margin-right:6px;"></i>Enregistrer
+        </button>
+      </div>
+    </div>`;
+
+  document.body.appendChild(modal);
+  modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
+}
+
+async function saveEditUser(id) {
+  const name = document.getElementById('editUserName')?.value.trim() || '';
+  const email = document.getElementById('editUserEmail')?.value.trim() || '';
+  const role = document.getElementById('editUserRole')?.value || 'patient';
+  const password = document.getElementById('editUserPassword')?.value || '';
+
+  if (!email) { showToast('L\'email est requis.', 'error'); return; }
+
+  const btn = document.querySelector('#editUserModal button:last-child');
+  if (btn) { btn.disabled = true; btn.textContent = 'Enregistrement…'; }
+
+  try {
+    const res = await fetch('/OptiMed/api/update_user.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ id, full_name: name, email, role, password }),
+    });
+    const data = await res.json();
+
+    if (data.success) {
+      document.getElementById('editUserModal')?.remove();
+      showToast('Utilisateur mis à jour avec succès.', 'success');
+      initAdminUsers();
+    } else {
+      showToast(data.message || 'Erreur lors de la mise à jour.', 'error');
+      if (btn) { btn.disabled = false; btn.textContent = 'Enregistrer'; }
+    }
+  } catch (err) {
+    showToast('Erreur réseau.', 'error');
+    if (btn) { btn.disabled = false; btn.textContent = 'Enregistrer'; }
+    console.error('saveEditUser:', err);
+  }
+}
+
+
+// ═══════════════════════════════════════════════════════════════════════════
+//  ADMIN — DÉPARTEMENTS
+// ═══════════════════════════════════════════════════════════════════════════
+
+async function initAdminDepartments() {
+  const grid = document.getElementById('adminDepartmentsGrid');
+  if (!grid) return;
+
+  grid.innerHTML = `
+    <div style="text-align:center;padding:40px;color:var(--muted);grid-column:1/-1;">
+      <i class="fas fa-spinner fa-spin" style="font-size:24px;"></i>
+    </div>`;
+
+  try {
+    const res = await fetch('/OptiMed/api/get_departments_with_doctors.php',
+      { credentials: 'include' });
+    const data = await res.json();
+
+    if (!data.success) {
+      grid.innerHTML = `<p style="color:var(--rose);padding:20px;grid-column:1/-1;">
+        ${data.message}
+      </p>`;
+      return;
+    }
+
+    if (!data.departments.length) {
+      grid.innerHTML = `
+        <div style="text-align:center;padding:50px;color:var(--muted);grid-column:1/-1;">
+          Aucun département trouvé.
+        </div>`;
+      return;
+    }
+
+    const gradients = [
+      'linear-gradient(135deg,#0a7c6e,#0fb8a4)',
+      'linear-gradient(135deg,#7b1fa2,#ab47bc)',
+      'linear-gradient(135deg,#388e3c,#4caf50)',
+      'linear-gradient(135deg,#f59e0b,#fbbf24)',
+      'linear-gradient(135deg,#1565c0,#42a5f5)',
+      'linear-gradient(135deg,#c62828,#ef5350)',
+      'linear-gradient(135deg,#00695c,#26a69a)',
+      'linear-gradient(135deg,#4527a0,#7e57c2)',
+    ];
+
+    grid.innerHTML = data.departments.map((dept, i) => {
+      const bg = gradients[i % gradients.length];
+      const doctors = dept.doctors || [];
+      return `
+        <div style="background:var(--surface);border:1px solid var(--border);
+                    border-radius:16px;overflow:hidden;
+                    box-shadow:0 2px 12px rgba(0,0,0,.04);">
+
+          <!-- En-tête coloré -->
+          <div style="background:${bg};padding:20px 22px;color:#fff;position:relative;
+                      overflow:hidden;">
+            <div style="position:absolute;right:-12px;top:-12px;width:70px;height:70px;
+                        border-radius:50%;background:rgba(255,255,255,.1);"></div>
+            <div style="font-size:22px;margin-bottom:8px;">
+              <i class="fas fa-hospital-user"></i>
+            </div>
+            <div style="font-size:16px;font-weight:800;margin-bottom:4px;">
+              ${dept.name}
+            </div>
+            <div style="font-size:12px;opacity:.8;">
+              ${doctors.length} médecin${doctors.length !== 1 ? 's' : ''}
+            </div>
+          </div>
+
+          <!-- Description -->
+          ${dept.description ? `
+            <div style="padding:12px 18px;font-size:12px;color:var(--muted);
+                        border-bottom:1px solid var(--border);line-height:1.5;">
+              ${dept.description}
+            </div>` : ''}
+
+          <!-- Liste des médecins -->
+          <div style="padding:12px 0;">
+            ${doctors.length ? doctors.map(d => `
+              <div style="display:flex;align-items:center;gap:10px;
+                          padding:8px 18px;transition:background .15s;"
+                   onmouseover="this.style.background='var(--bg)'"
+                   onmouseout="this.style.background='transparent'">
+                <div style="width:32px;height:32px;border-radius:50%;
+                            background:var(--teal-pale);color:var(--teal);
+                            display:flex;align-items:center;justify-content:center;
+                            font-weight:700;font-size:12px;flex-shrink:0;">
+                  ${d.first_name?.[0] || ''}${d.last_name?.[0] || ''}
+                </div>
+                <div style="flex:1;min-width:0;">
+                  <div style="font-weight:600;font-size:13px;">
+                    Dr. ${d.first_name} ${d.last_name}
+                  </div>
+                  <div style="font-size:11px;color:var(--muted);">
+                    ${d.email || ''}
+                  </div>
+                </div>
+              </div>`).join('')
+          : `<div style="padding:16px 18px;font-size:13px;color:var(--muted);
+                           text-align:center;">
+                 <i class="fas fa-user-slash" style="margin-right:6px;opacity:.5;"></i>
+                 Aucun médecin affecté
+               </div>`}
+          </div>
+
+        </div>`;
+    }).join('');
+
+  } catch (err) {
+    grid.innerHTML = `<p style="color:var(--rose);padding:20px;grid-column:1/-1;">
+      Erreur réseau.
+    </p>`;
+    console.error('initAdminDepartments:', err);
+  }
+}
+
 function _applyAdminAptFilters() {
   let apts = _adminAptsCache;
   if (App.filterApts) {
@@ -2436,9 +3664,118 @@ function renderAdminPatientsTable(pts) {
           <td><span class="status-badge status-confirmed">${p.status}</span></td>
         </tr>`).join('');
 }
+
+let _patientsCache = [];
+
+async function initAdminPatients() {
+  const tbody = document.getElementById('adminPatientTable');
+  if (!tbody) return;
+
+  tbody.innerHTML = `
+    <tr>
+      <td colspan="7" style="text-align:center;padding:30px;color:var(--muted);">
+        <i class="fas fa-spinner fa-spin" style="margin-right:8px;"></i>
+        Chargement…
+      </td>
+    </tr>`;
+
+  try {
+    const res = await fetch('/OptiMed/api/get_patients.php', { credentials: 'include' });
+    const data = await res.json();
+
+    if (!data.success) {
+      tbody.innerHTML = `<tr><td colspan="7" style="color:var(--rose);padding:20px;text-align:center;">
+        ${data.message}
+      </td></tr>`;
+      return;
+    }
+
+    _patientsCache = data.patients;
+    renderAdminPatientsTable(_patientsCache);
+
+  } catch (err) {
+    tbody.innerHTML = `<tr><td colspan="7" style="color:var(--rose);padding:20px;text-align:center;">
+      Erreur réseau.
+    </td></tr>`;
+    console.error('initAdminPatients:', err);
+  }
+}
+
+function renderAdminPatientsTable(patients) {
+  const tbody = document.getElementById('adminPatientTable');
+  if (!tbody) return;
+
+  if (!patients.length) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="7" style="text-align:center;padding:40px;color:var(--muted);">
+          <i class="fas fa-user-slash"
+             style="font-size:28px;display:block;margin-bottom:10px;opacity:.4;"></i>
+          Aucun patient trouvé.
+        </td>
+      </tr>`;
+    return;
+  }
+
+  tbody.innerHTML = patients.map(p => `
+    <tr style="border-bottom:1px solid var(--border);">
+      <td style="padding:12px 16px;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div style="width:36px;height:36px;border-radius:50%;
+                      background:var(--teal-pale);color:var(--teal);
+                      display:flex;align-items:center;justify-content:center;
+                      font-weight:700;font-size:13px;flex-shrink:0;">
+            ${(p.first_name?.[0] || '') + (p.last_name?.[0] || '')}
+          </div>
+          <div>
+            <div style="font-weight:700;font-size:13px;">
+              ${p.first_name} ${p.last_name}
+            </div>
+            <div style="font-size:11px;color:var(--muted);">#${p.id}</div>
+          </div>
+        </div>
+      </td>
+      <td style="padding:12px 16px;">
+        <div style="font-size:13px;">${p.email}</div>
+        <div style="font-size:11px;color:var(--muted);">${p.phone || '—'}</div>
+      </td>
+      <td style="padding:12px 16px;text-align:center;">
+        <span style="font-size:13px;font-weight:700;color:var(--teal);">
+          ${p.blood_type || '—'}
+        </span>
+      </td>
+      <td style="padding:12px 16px;text-align:center;">
+        <span style="font-size:12px;padding:3px 10px;border-radius:10px;
+                     background:#e8f5e9;color:#388e3c;font-weight:700;">
+          Actif
+        </span>
+      </td>
+      <td style="padding:12px 16px;text-align:center;font-weight:700;">
+        ${p.total_visits ?? 0}
+      </td>
+      <td style="padding:12px 16px;font-size:12px;color:var(--muted);">
+        ${p.last_visit
+      ? new Date(p.last_visit).toLocaleDateString('fr-FR')
+      : '—'}
+      </td>
+      <td style="padding:12px 16px;">
+        <span style="padding:4px 10px;border-radius:10px;font-size:11px;font-weight:700;
+                     ${p.cancellation_count > 2
+      ? 'background:#fce4ec;color:#c62828;'
+      : 'background:#e0f7fa;color:#0a7c6e;'}">
+          ${p.cancellation_count > 2 ? 'À surveiller' : 'Actif'}
+        </span>
+      </td>
+    </tr>`).join('');
+}
+
 function filterPatients(q) {
-  const pts = App.patients.filter(p => p.name.toLowerCase().includes(q.toLowerCase()) || p.email.toLowerCase().includes(q.toLowerCase()));
-  renderAdminPatientsTable(pts);
+  const term = (q || '').toLowerCase();
+  const filtered = _patientsCache.filter(p =>
+    `${p.first_name} ${p.last_name}`.toLowerCase().includes(term) ||
+    (p.email || '').toLowerCase().includes(term)
+  );
+  renderAdminPatientsTable(filtered);
 }
 
 function renderAdminChat() {
@@ -2548,6 +3885,9 @@ function switchAdminTab(tab) {
   document.getElementById(`atab-${tab}`)?.classList.add('active');
   document.getElementById(`asdb-${tab}`)?.classList.add('active');
   if (tab === 'appointments') initAdminAppointments();
+  if (tab === 'users') initAdminUsers();
+  if (tab === 'departments') initAdminDepartments();
+  if (tab === 'patients') initAdminPatients();
 }
 
 /* ---------
@@ -2559,7 +3899,7 @@ async function handleContactSubmit(e) {
   setBtnLoading(btn, 'ctBtnText', true);
   await fakeDelay(1000);
   setBtnLoading(btn, 'ctBtnText', false);
-  showToast('Message sent! We\'ll reply within 24 hours. 📧', 'success');
+  showToast('Message sent! We\'ll reply within 24 hours. ', 'success');
   e.target.reset();
 }
 
@@ -2741,7 +4081,7 @@ async function submitNewDoctor() {
   setBtnLoading(btn, 'addDoctorBtnText', true);
 
   try {
-    const res = await fetch('api/add_doctor.php', {
+    const res = await fetch('/OptiMed/api/add_doctor.php', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -2761,7 +4101,7 @@ async function submitNewDoctor() {
       return;
     }
 
-    showToast(`Dr. ${first} ${last} added successfully! 🩺`, 'success');
+    showToast(`Dr. ${first} ${last} added successfully!`, 'success');
     closeAddDoctorModal();
     // Optionally refresh the doctors list:
     // await loadDoctorsTable();
@@ -2785,7 +4125,7 @@ function closeAddDoctorModal() {
 // Call once when the admin page loads to populate the <select>
 async function loadDepartments() {
   try {
-    const res = await fetch('api/get_departments.php', { credentials: 'include' });
+    const res = await fetch('/OptiMed/api/get_departments.php', { credentials: 'include' });
     const data = await res.json();
     if (!data.success) return;
     const sel = document.getElementById('docDepartment');
@@ -2803,5 +4143,32 @@ async function loadDepartments() {
 /* ---------
    INIT
 --------- */
-initHome();
+// ── Détecter le sous-chemin de base (ex: /OptiMed) ──────────────
+window._basePath = (() => {
+  const path = window.location.pathname;
+  const pages = ['/login', '/register', '/booking', '/dashboard', '/contact'];
+  for (const p of pages) {
+    const idx = path.indexOf(p);
+    if (idx !== -1) return path.slice(0, idx);
+  }
+  return path.endsWith('/') ? path.slice(0, -1) : path;
+})();
+
+// ── Routage initial depuis l'URL ─────────────────────────────────
+function _pageFromUrl(pathname) {
+  const clean = pathname.replace(window._basePath, '').replace(/^\//, '');
+  const map = {
+    '': 'home',
+    'login': 'login',
+    'register': 'register',
+    'booking': 'booking',
+    'dashboard': 'dashboard',
+    'dashboard/admin': 'admin',
+    'contact': 'contact',
+  };
+  return map[clean] ?? 'home';
+}
+
+const startPage = _pageFromUrl(window.location.pathname);
+goPage(startPage);
 document.getElementById('navbar').classList.add('dark-nav');

@@ -27,7 +27,10 @@ $stmt = $conn->prepare(
     "SELECT u.id, u.email, u.password, u.role,
             COALESCE(p.first_name, d.first_name) AS first_name,
             COALESCE(p.last_name,  d.last_name)  AS last_name,
-            COALESCE(p.phone,      d.phone)       AS phone
+            COALESCE(p.phone,      d.phone)       AS phone,
+            p.cne     AS cne,
+            p.dob     AS dob,
+            p.gender  AS gender
      FROM users u
      LEFT JOIN patients p ON p.user_id = u.id
      LEFT JOIN doctors  d ON d.user_id = u.id
@@ -54,6 +57,9 @@ $payload = [
     'firstName'  => $user['first_name'] ?? '',
     'lastName'   => $user['last_name']  ?? '',
     'phone'      => $user['phone']      ?? '',
+    'cne'        => $user['cne']        ?? '',
+    'dob'        => $user['dob']        ?? '',
+    'gender'     => $user['gender']     ?? '',
     'initials'   => strtoupper(
                         substr($user['first_name'] ?? '', 0, 1) .
                         substr($user['last_name']  ?? '', 0, 1)
