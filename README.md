@@ -1,6 +1,6 @@
 import os
 
-readme_content = """# 🏥 OptiMed - Système Intelligent de Gestion de Clinique
+🏥 OptiMed - Système Intelligent de Gestion de Clinique
 
 **OptiMed** est une application web complète de gestion de clinique médicale, conçue dans le cadre d'un Projet de Fin d'Études (PFE). L'application se distingue par l'intégration d'un module d'analyse permettant d'optimiser la gestion des rendez-vous et d'identifier les comportements des patients (absentéisme).
 
